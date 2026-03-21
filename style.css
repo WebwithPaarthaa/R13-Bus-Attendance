@@ -236,7 +236,7 @@ body{
   }
 
   .form-group label {
-    width: 100%;
+    width: auto;
     margin-bottom: 5px;
   }
 
@@ -317,7 +317,7 @@ body{
     align-items: center;
     padding-left: 50px;
     padding-right: 50px;
-    width: 420px;
+    width: 300px;
 }
 
 }
