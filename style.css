@@ -1,0 +1,254 @@
+*{
+    padding: 0px;
+    margin: 0px;
+}
+
+body{
+  font-family: "Funnel Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: weight;
+  font-style: normal;
+}
+
+.Appbar{
+    height: 100px;
+    background-color:rgba(144, 135, 137, 0.918);
+    }
+.Appbar-content{
+    display: flex;
+    justify-content: space-between;
+    padding-top: 20px;
+    align-items: center;
+}
+.pages {
+    padding-top: 10px;
+    display: flex;
+    margin-left: 20px;
+}
+.pages a{
+    margin-left: 20px;
+}
+
+
+
+.greet{
+  background: white;
+  padding: 30px 50px;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  text-align: center;
+}
+.center{
+    height: auto;
+    margin-top:100px ; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.page{
+    height: auto; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+}
+.page h6{
+    align-items: center;
+    display:flex;
+    background: white;
+    padding: 30px 50px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    text-align: center;
+    margin: 25px;
+}
+
+.greet h6{
+    padding-top:40px;
+}
+
+.student-dashboard{
+    background: white;
+    padding: 30px 50px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    text-align: center;
+}
+.form-box {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  width: 350px;
+  margin: auto;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.form-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.form-group label {
+  width: 200px; 
+  font-weight: bold;
+}
+
+.form-group input {
+  flex: 1;
+  padding: 5px;
+}
+.student-dashboard button{
+    margin: 20px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 15px;
+    background-color:rgb(64, 98, 220);
+    color: white;
+    font-size:medium;
+    font-weight: bolder;
+    cursor: pointer;
+}
+
+
+.Admin-dashboard{
+    background: white;
+    padding: 30px 50px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    text-align: center;
+}
+.Admin-dashboard button{
+    margin: 20px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 15px;
+    background-color:rgb(64, 98, 220);
+    color: white;
+    font-size:medium;
+    font-weight: bolder;
+    cursor: pointer;
+}
+
+button{
+    margin: 20px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 15px;
+    background-color:rgb(137, 12, 12);
+    color: white;
+    font-size:medium;
+    text-align: left;
+    float: right;
+    cursor: pointer;
+ 
+}
+
+.list h2{
+    margin-top: 80px;
+    margin-bottom: 50px;
+    margin-left: 10px;
+}
+
+.list table{
+    margin: 50px;
+}
+
+.list th{
+    padding: 5px;
+}
+
+.down-btn{
+    margin: 20px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 15px;
+    background-color:rgb(12, 62, 137);
+    color: white;
+    font-size:medium;
+    text-align: left;
+    float: left;
+    cursor: pointer;
+ 
+}
+
+
+@media (max-width: 768px) {
+  .Appbar-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .pages {
+    flex-direction: column;
+    margin: 10px 0;
+  }
+
+  .pages a {
+    margin: 10px 0;
+  }
+}
+
+.form-box {
+  width: 90%;
+  max-width: 400px;
+}
+
+
+
+@media (max-width: 768px) {
+  .form-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-group label {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+
+  .form-group input {
+    width: 100%;
+  }
+}
+
+
+@media (max-width: 768px) {
+  .list table {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  button {
+    float: none;
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  .down-btn {
+    float: none;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .greet,
+  .student-dashboard,
+  .Admin-dashboard {
+    padding: 20px;
+  }
+}
