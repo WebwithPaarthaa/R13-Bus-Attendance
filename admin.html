@@ -41,7 +41,7 @@
     <label>Password:</label>
     <input type="password" id="adminPass" placeholder="Password" required><br><br>
   </div>
-  <button onclick="adminLogin">Login</button>
+  <button type="button" onclick="adminLogin()">Login</button>
  
 
 </div>
@@ -56,12 +56,31 @@ function adminLogin() {
   let password = document.getElementById("adminPass").value;
 
   if (username === "paarthhaaa" && password === "010407") {
-    localStorage.setItem("isAdminLoggedIn", "true");
-    alert("✅ Login Successful");
-    window.location.href = "./dashboard.html";
+
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        let lat = position.coords.latitude;
+        let lon = position.coords.longitude;
+
+        localStorage.setItem("adminLocation", JSON.stringify({ lat, lon }));
+        localStorage.setItem("isAdminLoggedIn", "true");
+
+        alert("✅ Login Successful & Location Saved!");
+        window.location.href = "./dashboard.html";
+      },
+      function() {
+        alert("❌ Please enable location for admin!");
+      }
+    );
+
   } else {
     alert("❌ Invalid Credentials");
   }
+}
+
+// 🔁 Auto redirect if already logged in
+if (localStorage.getItem("isAdminLoggedIn") === "true") {
+  window.location.href = "dashboard.html";
 }
 </script>
 </body>
