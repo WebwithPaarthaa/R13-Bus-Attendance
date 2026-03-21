@@ -27,9 +27,8 @@ body{
 }
 .pages a{
     margin-left: 20px;
+    cursor: pointer;
 }
-
-
 
 .greet{
   background: white;
@@ -51,17 +50,19 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 50px;
+    margin-top: 20px;
 }
 .page h6{
     align-items: center;
     display:flex;
     background: white;
-    padding: 30px 50px;
+    padding: 30px;
     border-radius: 15px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     text-align: center;
-    margin: 25px;
+    margin: 20px;
+    font-size: large;
+    font-weight: bold
 }
 
 .greet h6{
@@ -70,17 +71,20 @@ body{
 
 .student-dashboard{
     background: white;
-    padding: 30px 50px;
+    padding:50px;
     border-radius: 15px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     text-align: center;
+    font-size: medium;
+    
+    
 }
 .form-box {
   background: white;
   padding: 30px;
   border-radius: 15px;
-  width: 350px;
-  margin: auto;
+  width: 0px;
+  margin-top: 20px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
@@ -88,7 +92,9 @@ body{
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 10px 0;
+  margin-top: 10px;
+  width: auto;
+  text-align: left;
 }
 
 .form-group label {
@@ -136,7 +142,7 @@ body{
     cursor: pointer;
 }
 
-button{
+.log{
     margin: 20px;
     padding-bottom: 5px;
     padding-top: 5px;
@@ -184,31 +190,48 @@ button{
 
 
 @media (max-width: 768px) {
+  
+.Appbar{
+    height: 100px;
+    background-color:rgba(144, 135, 137, 0.918);
+    }
   .Appbar-content {
     flex-direction: column;
     text-align: center;
+    margin-left: 5px;
   }
 
   .pages {
-    flex-direction: column;
-    margin: 10px 0;
-  }
+    flex-direction: row;
+    cursor:pointer;
+    font-size: medium;
+    font-weight: bold;
+    position: absolute;
+    top: 90px;
+    left: 0px;
+    }
 
   .pages a {
-    margin: 10px 0;
+    margin: 20px;
+    text-decoration: none;
+    color: black;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 15px;
+
   }
 }
 
 .form-box {
-  width: 90%;
+  width: auto;
   max-width: 400px;
+
 }
 
 
 
 @media (max-width: 768px) {
   .form-group {
-    flex-direction: column;
     align-items: flex-start;
   }
 
@@ -218,7 +241,7 @@ button{
   }
 
   .form-group input {
-    width: 100%;
+    width: auto;
   }
 }
 
@@ -227,28 +250,75 @@ button{
   .list table {
     display: block;
     overflow-x: auto;
-    width: 100%;
+    width: auto;
   }
 }
 
 @media (max-width: 768px) {
-  button {
-    float: none;
-    display: block;
-    width: 100%;
-    margin: 10px 0;
-  }
 
-  .down-btn {
-    float: none;
-    width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
   .greet,
-  .student-dashboard,
   .Admin-dashboard {
     padding: 20px;
+    margin: 50px;
+    max-width: auto;
   }
+
+  .student-dashboard{
+    width: 100%;
+  }
+
 }
+
+@media (max-width:768px) {
+  
+
+
+  .log{
+    background-color:rgb(137, 12, 12);
+    top:10px;
+    position: relative;
+    left: 25px;
+    color: white;
+    font-size:medium;
+    font-weight: bold;
+    text-align: right;
+    float: right;
+    cursor: pointer;
+    width: auto;
+    margin-top: 15px;
+    box-shadow: 2px 8px 20px rgba(0,0,0,0.2);
+ }
+
+ .down-btn{
+    margin: 20px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 15px;
+    background-color:rgb(12, 62, 137);
+    color: white;
+    font-size:medium;
+    text-align: left;
+    float: left;
+    cursor: pointer;
+    width: auto;
+    box-shadow: 2px 8px 20px rgba(0,0,0,0.2);
+ 
+}
+.page a{
+  width: 120px;
+}
+.center{
+    height: auto;
+    margin-top:100px ; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-left: 50px;
+    padding-right: 50px;
+    width: 420px;
+}
+
+}
+
