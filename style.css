@@ -1,6 +1,8 @@
 *{
     padding: 0px;
     margin: 0px;
+    
+    
 }
 
 body{
@@ -12,7 +14,8 @@ body{
 
 .Appbar{
     height: auto;
-    background-color:rgba(144, 135, 137, 0.918);
+    background-color:#0F172A;
+    color: white;
     }
 .Appbar-content{
     display: flex;
@@ -171,6 +174,7 @@ body{
 
 .list th{
     padding: 5px;
+
 }
 
 .down-btn{
@@ -194,7 +198,7 @@ body{
   
 .Appbar{
     height: auto;
-    background-color:rgba(144, 135, 137, 0.918);
+    background-color:#0F172A;
     }
   .Appbar-content {
     flex-direction: column;
@@ -323,7 +327,6 @@ body{
   
 .Appbar{
     height: 15vh;
-    background-color:rgba(144, 135, 137, 0.918);
     }
   .Appbar-content {
     flex-direction: column;
