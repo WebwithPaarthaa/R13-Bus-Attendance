@@ -1,17 +1,21 @@
-
 if (window.location.pathname.includes("dashboard.html")) {
-  setTimeout(async () => {
-    let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
 
-    let adminRef = doc(db, "admin", "location");
-    let adminDoc = await getDoc(adminRef);
+  checkAdminSession();
 
-    if (isLoggedIn !== "true" || !adminDoc.exists()) {
-      window.location.href = "admin.html";
-    }
-  }, 500);
 }
 
+async function checkAdminSession() {
+  let adminRef = doc(db, "admin", "location");
+  let adminDoc = await getDoc(adminRef);
+
+  if (!adminDoc.exists()) {
+    // ❌ No admin → go back
+    window.location.href = "admin.html";
+    return;
+  }
+
+  // ✅ Admin exists → stay
+}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getFirestore,
@@ -100,6 +104,13 @@ if (adminDoc.exists()) {
   }
 };
 
+if (window.location.pathname.includes("admin.html")) {
+  let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
+
+  if (isLoggedIn === "true") {
+    window.location.href = "dashboard.html";
+  }
+}
 
 
 let form = document.getElementById("studentForm");
@@ -182,21 +193,23 @@ if (table) {
     let now = new Date();
     let count = 0;
 
-    snapshot.forEach((docData) => {
-      let s = docData.data();
-      let recordTime = new Date(s.time);
+let index = 1; // 🔥 serial number
 
+snapshot.forEach((docData) => {
+  let s = docData.data();
+  let recordTime = new Date(s.time);
 
-      if (now - recordTime <= 12 * 60 * 60 * 1000) {
-        let row = table.insertRow();
-        row.insertCell(0).innerText = s.name;
-        row.insertCell(1).innerText = s.regno;
-        row.insertCell(2).innerText = s.dept;
-        row.insertCell(3).innerText = s.stop;
-        row.insertCell(4).innerText = recordTime.toLocaleString();
-        count++;
-      }
-    });
+  if (now - recordTime <= 12 * 60 * 60 * 1000) {
+    let row = table.insertRow();
+
+    row.insertCell(0).innerText = index++; // ✅ S.No
+    row.insertCell(1).innerText = s.name;
+    row.insertCell(2).innerText = s.regno;
+    row.insertCell(3).innerText = s.dept;
+    row.insertCell(4).innerText = s.stop;
+    row.insertCell(5).innerText = recordTime.toLocaleString();
+  }
+});
 
     console.log("Total students:", count);
   });
@@ -212,15 +225,15 @@ globalThis.logout = async function () {
   try {
     await deleteDoc(doc(db, "admin", "location"));
   } catch (err) {
-    console.log("Delete failed:", err);
+    console.log("Error deleting admin:", err);
   }
 
-  localStorage.removeItem("isAdminLoggedIn");
+  // 🔥 clear local session
+  localStorage.clear();
 
-  alert("Logged out!");
+  // 🔥 force reload + redirect
   window.location.href = "index.html";
 };
-
 
 function getDistance(lat1, lon1, lat2, lon2) {
   let R = 6371;
