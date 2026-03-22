@@ -1,4 +1,4 @@
-// 🔐 Protect dashboard page
+
 if (window.location.pathname.includes("dashboard.html")) {
   let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
 
@@ -7,7 +7,7 @@ if (window.location.pathname.includes("dashboard.html")) {
   }
 }
 
-// 🔥 Firebase Setup
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getFirestore,
@@ -36,33 +36,41 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 
-// 🧑‍💼 ADMIN LOGIN
+
 globalThis.adminLogin = async function () {
   let username = document.getElementById("adminUser").value;
   let password = document.getElementById("adminPass").value;
 
-  // 🔐 basic validation
   if (!username || !password) {
     alert("Enter credentials!");
     return;
   }
 
-  let adminRef = doc(db, "admin", "location");
-  let adminDoc = await getDoc(adminRef);
 
-  // ⏱️ Check active admin with expiry (10 min)
-  if (adminDoc.exists()) {
-    let data = adminDoc.data();
-    let now = new Date();
-    let adminTime = new Date(data.time);
 
-    if (now - adminTime < 10 * 60 * 1000) {
-      alert("⚠️ Admin already active!");
-      return;
-    }
+let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
+
+let adminRef = doc(db, "admin", "location");
+let adminDoc = await getDoc(adminRef);
+
+
+if (isLoggedIn === "true") {
+  window.location.href = "dashboard.html";
+  return;
+}
+
+
+if (adminDoc.exists()) {
+  let data = adminDoc.data();
+  let now = new Date();
+  let adminTime = new Date(data.time);
+
+  if (now - adminTime < 10 * 60 * 1000) {
+    alert("⚠️ Admin already active on another device!");
+    return;
   }
+}
 
-  // 🔑 credentials (TEMP)
   if (username === "paarthhaaa" && password === "010407") {
     navigator.geolocation.getCurrentPosition(async (position) => {
       let lat = position.coords.latitude;
@@ -89,7 +97,7 @@ globalThis.adminLogin = async function () {
 };
 
 
-// 🎓 STUDENT ATTENDANCE
+
 let form = document.getElementById("studentForm");
 
 if (form) {
@@ -114,7 +122,7 @@ if (form) {
       return;
     }
 
-    // 🚀 FAST duplicate check
+
     let q = query(collection(db, "attendance"), where("regno", "==", regno));
     let snapshot = await getDocs(q);
 
@@ -136,7 +144,6 @@ if (form) {
         adminLoc.lon
       );
 
-      // 📏 Allow slight GPS tolerance (50m)
       if (distance > 0.05) {
         alert("❌ Not near bus!");
         return;
@@ -161,7 +168,7 @@ if (form) {
 }
 
 
-// 📊 LIVE DASHBOARD
+
 let table = document.getElementById("table");
 
 if (table) {
@@ -175,7 +182,7 @@ if (table) {
       let s = docData.data();
       let recordTime = new Date(s.time);
 
-      // ⏱️ 12-hour filter
+
       if (now - recordTime <= 12 * 60 * 60 * 1000) {
         let row = table.insertRow();
         row.insertCell(0).innerText = s.name;
@@ -192,7 +199,7 @@ if (table) {
 }
 
 
-// 🚪 LOGOUT
+
 globalThis.logout = async function () {
   let confirmLogout = confirm("Logout?");
 
@@ -211,7 +218,6 @@ globalThis.logout = async function () {
 };
 
 
-// 📐 DISTANCE FUNCTION (Haversine)
 function getDistance(lat1, lon1, lat2, lon2) {
   let R = 6371;
   let dLat = (lat2 - lat1) * Math.PI / 180;
@@ -228,14 +234,13 @@ function getDistance(lat1, lon1, lat2, lon2) {
 }
 
 
-// 📱 MENU
 globalThis.toggleMenu = function () {
   let menu = document.getElementById("navLinks");
   menu.classList.toggle("active");
 };
 
 
-// 📥 CSV DOWNLOAD
+
 globalThis.downloadData = async function () {
   let querySnapshot = await getDocs(collection(db, "attendance"));
 
@@ -261,7 +266,6 @@ globalThis.downloadData = async function () {
 };
 
 
-// 📄 PDF DOWNLOAD
 globalThis.downloadPDF = async function () {
   let querySnapshot = await getDocs(collection(db, "attendance"));
 
@@ -289,7 +293,15 @@ globalThis.downloadPDF = async function () {
 };
 
 
-// 🖨️ PRINT
+
 globalThis.printTable = function () {
   window.print();
 };
+
+if (window.location.pathname.includes("admin.html")) {
+  let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
+
+  if (isLoggedIn === "true") {
+    window.location.href = "dashboard.html";
+  }
+}
