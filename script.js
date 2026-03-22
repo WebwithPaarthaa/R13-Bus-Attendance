@@ -1,4 +1,3 @@
-// 🔐 Protect dashboard
 if (window.location.pathname.includes("dashboard.html")) {
   let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
 
@@ -7,7 +6,7 @@ if (window.location.pathname.includes("dashboard.html")) {
     window.location.href = "admin.html";
   }
 }
-// 🔥 Firebase Imports
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getFirestore,
@@ -30,12 +29,12 @@ import {
   };
 
 
-// 🔥 Initialize Firebase
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 
-// ================= ADMIN LOGIN =================
+
 window.adminLogin = async function () {
   let username = document.getElementById("adminUser").value;
   let password = document.getElementById("adminPass").value;
@@ -46,7 +45,7 @@ window.adminLogin = async function () {
       let lat = position.coords.latitude;
       let lon = position.coords.longitude;
 
-      // ✅ Store location in Firebase
+      
       await setDoc(doc(db, "admin", "location"), {
         lat: lat,
         lon: lon,
@@ -68,7 +67,7 @@ window.adminLogin = async function () {
 };
 
 
-// ================= STUDENT ATTENDANCE =================
+
 let form = document.getElementById("studentForm");
 
 if (form) {
@@ -80,7 +79,7 @@ if (form) {
     let dept = document.getElementById("dept").value;
     let stop = document.getElementById("stop").value;
 
-    // 🔥 Get Admin Location from Firebase
+    
     let docRef = doc(db, "admin", "location");
     let docSnap = await getDoc(docRef);
 
@@ -107,7 +106,7 @@ if (form) {
         return;
       }
 
-      // ✅ Store attendance in Firebase
+      
       await addDoc(collection(db, "attendance"), {
         name,
         regno,
@@ -127,7 +126,7 @@ if (form) {
 }
 
 
-// ================= DASHBOARD =================
+
 let table = document.getElementById("table");
 
 if (table) {
@@ -141,7 +140,7 @@ querySnapshot.forEach((docData) => {
 
   let recordTime = new Date(s.time);
 
-  // ⏳ Check 12 hours (12 * 60 * 60 * 1000)
+  
   if (now - recordTime <= 12 * 60 * 60 * 1000) {
 
     let row = table.insertRow();
@@ -157,7 +156,6 @@ querySnapshot.forEach((docData) => {
 }
 
 
-// ================= LOGOUT =================
 window.logout = function () {
   let confirmLogout = confirm("Logout?");
   if (confirmLogout) {
@@ -168,7 +166,6 @@ window.logout = function () {
 };
 
 
-// ================= DISTANCE FUNCTION =================
 function getDistance(lat1, lon1, lat2, lon2) {
   let R = 6371;
   let dLat = (lat2 - lat1) * Math.PI / 180;
@@ -185,10 +182,65 @@ function getDistance(lat1, lon1, lat2, lon2) {
 }
 
 
-// ================= MOBILE MENU =================
+
 window.toggleMenu = function () {
   let menu = document.getElementById("navLinks");
   menu.classList.toggle("active");
 };
 
 expiry: Date.now() + (12 * 60 * 60 * 1000)
+
+
+window.downloadData = async function () {
+  let querySnapshot = await getDocs(collection(db, "attendance"));
+
+  if (querySnapshot.empty) {
+    alert("No data!");
+    return;
+  }
+
+  let csv = "Name,RegisterNumber,Department,Stop,Time\n";
+
+  querySnapshot.forEach((doc) => {
+    let s = doc.data();
+    csv += `${s.name},${s.regno},${s.dept},${s.stop},${s.time}\n`;
+  });
+
+  let blob = new Blob([csv], { type: "text/csv" });
+  let url = URL.createObjectURL(blob);
+
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "attendance.csv";
+  a.click();
+};
+
+window.downloadPDF = async function () {
+  let querySnapshot = await getDocs(collection(db, "attendance"));
+
+  if (querySnapshot.empty) {
+    alert("No data!");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  let docPDF = new jsPDF();
+
+  let rows = [];
+
+  querySnapshot.forEach((doc) => {
+    let s = doc.data();
+    rows.push([s.name, s.regno, s.dept, s.stop, s.time]);
+  });
+
+  docPDF.autoTable({
+    head: [["Name", "Reg No", "Dept", "Stop", "Time"]],
+    body: rows
+  });
+
+  docPDF.save("attendance.pdf");
+};
+
+window.printTable = function () {
+  window.print();
+};
