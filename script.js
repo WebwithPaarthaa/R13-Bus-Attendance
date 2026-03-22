@@ -1,12 +1,16 @@
 
 if (window.location.pathname.includes("dashboard.html")) {
-  let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
+  setTimeout(async () => {
+    let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
 
-  if (isLoggedIn !== "true") {
-    window.location.href = "admin.html";
-  }
+    let adminRef = doc(db, "admin", "location");
+    let adminDoc = await getDoc(adminRef);
+
+    if (isLoggedIn !== "true" || !adminDoc.exists()) {
+      window.location.href = "admin.html";
+    }
+  }, 500);
 }
-
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
