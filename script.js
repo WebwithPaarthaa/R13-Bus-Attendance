@@ -112,7 +112,7 @@ if (form) {
         regno,
         dept,
         stop,
-        time: new Date().toLocaleString()
+        time: new Date().toISOString()
       });
 
       alert("✅ Attendance Marked!");
@@ -129,42 +129,39 @@ if (form) {
 
 let table = document.getElementById("table");
 
+import { onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 if (table) {
-  (async () => {
-    let querySnapshot = await getDocs(collection(db, "attendance"));
+  onSnapshot(collection(db, "attendance"), (snapshot) => {
+    table.innerHTML = ""; // clear table
 
-let now = new Date();
+    let now = new Date();
 
-querySnapshot.forEach((docData) => {
-  let s = docData.data();
+    snapshot.forEach((docData) => {
+      let s = docData.data();
+      let recordTime = new Date(s.time);
 
-  let recordTime = new Date(s.time);
-
-  
-  if (now - recordTime <= 12 * 60 * 60 * 1000) {
-
-    let row = table.insertRow();
-    row.insertCell(0).innerText = s.name;
-    row.insertCell(1).innerText = s.regno;
-    row.insertCell(2).innerText = s.dept;
-    row.insertCell(3).innerText = s.stop;
-    row.insertCell(4).innerText = recordTime.toLocaleString();
-  }
-});
-
-  })();
+      if (now - recordTime <= 12 * 60 * 60 * 1000) {
+        let row = table.insertRow();
+        row.insertCell(0).innerText = s.name;
+        row.insertCell(1).innerText = s.regno;
+        row.insertCell(2).innerText = s.dept;
+        row.insertCell(3).innerText = s.stop;
+        row.insertCell(4).innerText = recordTime.toLocaleString();
+      }
+    });
+  });
 }
+
 
 
 window.logout = function () {
   let confirmLogout = confirm("Logout?");
   if (confirmLogout) {
     localStorage.removeItem("isAdminLoggedIn");
-    if (!localStorage.getItem("isAdminLoggedIn")) return;
-    window.location.href = "index.html";
+    window.location.replace("index.html"); 
   }
 };
-
 
 function getDistance(lat1, lon1, lat2, lon2) {
   let R = 6371;
@@ -188,7 +185,7 @@ window.toggleMenu = function () {
   menu.classList.toggle("active");
 };
 
-expiry: Date.now() + (12 * 60 * 60 * 1000)
+
 
 
 window.downloadData = async function () {

@@ -472,13 +472,13 @@ body{
  .nav-links.active {
     display: flex;
   }
-/* Hamburger icon hidden on desktop */
+
 .menu-toggle {
   display: block;
   cursor: pointer;
 }
 
-/* 🔥 Mobile View */
+
 @media (max-width: 768px) {
   .menu-toggle {
     display: block;
