@@ -11,7 +11,7 @@ body{
 }
 
 .Appbar{
-    height: 100px;
+    height: auto;
     background-color:rgba(144, 135, 137, 0.918);
     }
 .Appbar-content{
@@ -20,70 +20,68 @@ body{
     padding-top: 20px;
     align-items: center;
 }
-.pages {
-    padding-top: 10px;
-    display: flex;
-    margin-left: 20px;
-}
-.pages a{
-    margin-left: 20px;
-    cursor: pointer;
-}
 
 .greet{
   background: white;
-  padding: 30px 50px;
+  padding: 10px;
+  margin-bottom: 30px;
   border-radius: 15px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.2);
   text-align: center;
 }
 .center{
-    height: auto;
-    margin-top:100px ; 
+    height: fit-content;
+    margin-top:80px ; 
     display: flex;
     justify-content: center;
     align-items: center;
+    width: auto;
+    padding: 30px;
 }
 
 .page{
-    height: auto; 
-    display: flex;
+    height: fit-content; 
     justify-content: center;
     align-items: center;
     margin-top: 20px;
+    display: flex;
 }
 .page h6{
     align-items: center;
-    display:flex;
     background: white;
-    padding: 30px;
     border-radius: 15px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     text-align: center;
-    margin: 20px;
     font-size: large;
-    font-weight: bold
+    font-weight: bold;
+    margin-top: 20px;
+    padding: 20px;
+    width: fit-content;
+    justify-content: center;
+    display: flex;
+    margin: 20px;
+    
 }
 
 .greet h6{
-    padding-top:40px;
+    padding-top:20px;
 }
 
 .student-dashboard{
     background: white;
-    padding:50px;
+    padding:20px;
     border-radius: 15px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     text-align: center;
     font-size: medium;
+    width: 300px;
     
     
 }
 .form-box {
   background: white;
-  padding: 30px;
+  padding: 10px;
   border-radius: 15px;
-  width: 0px;
   margin-top: 20px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
@@ -104,6 +102,7 @@ body{
 
 .form-group input {
   flex: 1;
+  align-items: flex-start;
   padding: 5px;
 }
 .student-dashboard button{
@@ -123,10 +122,11 @@ body{
 
 .Admin-dashboard{
     background: white;
-    padding: 30px 50px;
+    padding: 30px;
     border-radius: 15px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     text-align: center;
+    width: 300px;
 }
 .Admin-dashboard button{
     margin: 20px;
@@ -166,6 +166,7 @@ body{
 
 .list table{
     margin: 50px;
+    margin-left: 20px;
 }
 
 .list th{
@@ -189,10 +190,139 @@ body{
 }
 
 
-@media (max-width: 400px) {
+@media (max-width: 600px) {
   
 .Appbar{
-    height: 100px;
+    height: auto;
+    background-color:rgba(144, 135, 137, 0.918);
+    }
+  .Appbar-content {
+    flex-direction: column;
+    text-align: left;
+    margin-left: 2px;
+  }
+  .Appbar-content h1{
+    display: flexbox;
+    justify-content: space-around;
+  }
+
+  .pages {
+    flex-direction: row;
+    cursor:pointer;
+    font-size: medium;
+    font-weight: bold;
+    display: flexbox;
+    justify-content: space-between;
+    margin-top: 25px;
+    }
+
+  .pages a {
+    margin: 20px;
+    color: black;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 15px;
+
+  }
+}
+
+.form-box {
+  width: auto;
+  max-width:200px;
+
+  .form-group label {
+    width: auto;
+    margin-bottom: 5px;
+  }
+
+  .form-group input {
+    width: auto;  
+  }
+
+
+  .list table {
+    display: block;
+    overflow-x: auto;
+    width: auto;
+  }
+
+
+  .Admin-dashboard {
+    padding: 0px;
+    margin: 0px;
+    width: auto;
+  }
+
+  .student-dashboard{
+    width:fit-content;
+    padding: 0px;
+    margin: 0px;
+  }
+
+  .greet{
+    display: flexbox;
+    justify-content: space-between;
+    margin-bottom: 30px;
+  }
+
+
+  
+
+
+  .log{
+    background-color:rgb(137, 12, 12);
+    top:10px;
+    position: relative;
+    left: 25px;
+    color: white;
+    font-size:medium;
+    font-weight: bold;
+    text-align: right;
+    float: right;
+    cursor: pointer;
+    width: auto;
+    margin-top: 15px;
+    box-shadow: 2px 8px 20px rgba(0,0,0,0.2);
+ }
+
+ .down-btn{
+    margin: 20px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 15px;
+    background-color:rgb(12, 62, 137);
+    color: white;
+    font-size:medium;
+    text-align: left;
+    float: left;
+    cursor: pointer;
+    width: auto;
+    box-shadow: 2px 8px 20px rgba(0,0,0,0.2);
+ 
+}
+.page a{
+  width: auto;
+}
+.center{
+    height: auto;
+    margin-top:100px ; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: auto;
+    margin: 0px;
+    padding: 0px;
+}
+
+}
+
+
+@media (min-width: 200px) {
+  
+.Appbar{
+    height: 15vh;
     background-color:rgba(144, 135, 137, 0.918);
     }
   .Appbar-content {
@@ -206,9 +336,9 @@ body{
     cursor:pointer;
     font-size: medium;
     font-weight: bold;
-    position: absolute;
-    top: 90px;
-    left: 0px;
+    display: flexbox;
+    justify-content: space-between;
+    margin-top: 25px;
     }
 
   .pages a {
@@ -226,35 +356,26 @@ body{
   width: auto;
   max-width: 400px;
 
-}
 
-
-
-@media (max-width: 400px) {
   .form-group {
     align-items: flex-start;
   }
 
   .form-group label {
-    width: auto;
+    width: 100%;
     margin-bottom: 5px;
   }
 
   .form-group input {
     width: auto;
   }
-}
 
-
-@media (max-width: 400px) {
   .list table {
     display: block;
     overflow-x: auto;
     width: auto;
   }
-}
 
-@media (max-width: 400px) {
 
   .greet,
   .Admin-dashboard {
@@ -267,9 +388,7 @@ body{
     width: 100%;
   }
 
-}
 
-@media (max-width:400px) {
   
 
 
@@ -315,10 +434,68 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-left: 50px;
-    padding-right: 50px;
-    width: 300px;
+    
+    width: 50%;
 }
 
 }
 
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: right;
+  background: #333;
+  padding: 10px 20px;
+  color: white;
+  position: absolute;
+  left: 10px;
+  top: 130px;
+  border-radius: 5px;
+}
+
+
+
+.nav-links {
+  list-style: none;
+  display: none;
+  flex-direction: column;
+  background: #333;
+  gap: 20px;
+}
+
+.nav-links li a {
+  color: white;
+  padding: 5px;
+
+}
+ .nav-links.active {
+    display: flex;
+  }
+/* Hamburger icon hidden on desktop */
+.menu-toggle {
+  display: block;
+  cursor: pointer;
+}
+
+/* 🔥 Mobile View */
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  
+  }
+
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    background: #333;
+    right: 0;
+    width: 200px;
+    padding: 10px;
+    
+  }
+
+  .nav-links.active {
+    display: flex;
+  }
+}

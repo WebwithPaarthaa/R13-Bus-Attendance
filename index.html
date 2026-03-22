@@ -15,10 +15,18 @@
     <div class="Appbar">
         <div class="Appbar-content">
             <h1>R13 BUS-Attendance🚌</h1>
-            <div class="pages">
-            <a href="index.html">Home</a>
-            <a href="student.html">Student-login</a>
-            <a href="admin.html">Admin-login</a>  
+           <nav class="navbar">
+
+  <div class="menu-toggle" onclick="toggleMenu()">
+    ☰
+  </div>
+
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="student.html">Student-login</a></li>
+    <li><a href="admin.html">Admin-login</a></li>
+  </ul>
+</nav>
                 
             </div>
         </div>
@@ -26,10 +34,15 @@
 
     <div class="center">
         <div class="greet" >
-            <h1>Heyyy!! Good Morning🌤️</h1>
+            <h1>Heyyy!!</h1>
+            <h1>Good Morning🌤️</h1>
             <h3>Have a safe journey👋 😊 </h3>
             <h6> Login here to proceed ⤵️</h6>
-        <div class="page">
+       
+        </div> 
+       
+    </div>
+          <div class="page">
             <h6> 
                 <a href="student.html">Student-login</a> 
             </h6>
@@ -37,12 +50,9 @@
                <a href="admin.html">Admin-login</a> 
             </h6>
         </div>
-        </div> 
-    </div>
-        
     
     
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

@@ -15,11 +15,19 @@
     <div class="Appbar">
         <div class="Appbar-content">
             <h1>R13 BUS-Attendance🚌</h1>
-        <div class="pages">
-            <a href="index.html">Home</a>
-            <a href="student.html">Student-login</a>
-            <a href="admin.html">Admin-login</a>
-        </div>
+       <nav class="navbar">
+
+  <div class="menu-toggle" onclick="toggleMenu()">
+    ☰
+  </div>
+
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="student.html">Student-login</a></li>
+    <li><a href="admin.html">Admin-login</a></li>
+  </ul>
+</nav>
+                
 
         </div>
        
@@ -47,41 +55,8 @@
 </div>
 </div>
 
+<script type="module" src="script.js">
 
-  
-
-    <script>
-function adminLogin() {
-  let username = document.getElementById("adminUser").value;
-  let password = document.getElementById("adminPass").value;
-
-  if (username === "paarthhaaa" && password === "010407") {
-
-    navigator.geolocation.getCurrentPosition(
-      function(position) {
-        let lat = position.coords.latitude;
-        let lon = position.coords.longitude;
-
-        localStorage.setItem("adminLocation", JSON.stringify({ lat, lon }));
-        localStorage.setItem("isAdminLoggedIn", "true");
-
-        alert("✅ Login Successful & Location Saved!");
-        window.location.href = "./dashboard.html";
-      },
-      function() {
-        alert("❌ Please enable location for admin!");
-      }
-    );
-
-  } else {
-    alert("❌ Invalid Credentials");
-  }
-}
-
-// 🔁 Auto redirect if already logged in
-if (localStorage.getItem("isAdminLoggedIn") === "true") {
-  window.location.href = "dashboard.html";
-}
 </script>
 </body>
 </html>

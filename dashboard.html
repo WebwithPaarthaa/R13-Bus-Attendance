@@ -15,12 +15,19 @@
     <div class="Appbar">
         <div class="Appbar-content">
             <h1>R13 BUS-Attendance🚌</h1>
-        <div class="pages">
-            <a href="index.html">Home</a>
-            <a href="student.html">Student-login</a>
-            <a href="admin.html">Admin-login</a>
-        </div>
+        <nav class="navbar">
 
+  <div class="menu-toggle" onclick="toggleMenu()">
+    ☰
+  </div>
+
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="student.html">Student-login</a></li>
+    <li><a href="admin.html">Admin-login</a></li>
+  </ul>
+</nav>
+                
         </div>
     </div>
 
@@ -52,11 +59,7 @@
 <button onclick="downloadPDF()" class="down-btn">Download PDF</button>
 <button onclick="printTable()" class="down-btn">Print</button>
   
-
-    <script src="script.js" defer >
-        
-
-    </script>
+<script type="module" src="script.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
