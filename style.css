@@ -505,7 +505,8 @@ body{
 
 .table-container {
   width: 100%;
-  min-width: 500px;
+  max-width: 500px;
+  overflow-x: auto;
 
   overflow-x: auto;
 }
@@ -522,4 +523,25 @@ th, td {
   text-align: center;
 }
 
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; 
+}
+
+td, th {
+  padding: 8px;
+  text-align: left;
+  word-break: break-word;
+}
+
+td {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }

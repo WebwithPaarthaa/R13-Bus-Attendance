@@ -1,21 +1,3 @@
-if (window.location.pathname.includes("dashboard.html")) {
-
-  checkAdminSession();
-
-}
-
-async function checkAdminSession() {
-  let adminRef = doc(db, "admin", "location");
-  let adminDoc = await getDoc(adminRef);
-
-  if (!adminDoc.exists()) {
-    // ❌ No admin → go back
-    window.location.href = "admin.html";
-    return;
-  }
-
-  
-}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getFirestore,
@@ -37,11 +19,31 @@ const firebaseConfig = {
   projectId: "r13-busattendance-76f86",
   storageBucket: "r13-busattendance-76f86.firebasestorage.app",
   messagingSenderId: "449329724909",
-  appId: "1:449329724909:web:aaaf40d103bc9959b33be4"
+  appId: "1:449329724909:web:aaaf40d103bc9959b33be4",
+  authDomain: "r13-busattendance-76f86.firebaseapp.com",
+  projectId: "r13-busattendance-76f86",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+
+let watchId = null;
+
+
+if (window.location.pathname.includes("dashboard.html")) {
+  checkAdminSession();
+}
+
+async function checkAdminSession() {
+  let adminRef = doc(db, "admin", "location");
+  let adminDoc = await getDoc(adminRef);
+  let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
+
+  if (!adminDoc.exists() || isLoggedIn !== "true") {
+    window.location.replace("admin.html");
+  }
+}
 
 
 
@@ -54,63 +56,77 @@ globalThis.adminLogin = async function () {
     return;
   }
 
-
-
-let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
-
-let adminRef = doc(db, "admin", "location");
-let adminDoc = await getDoc(adminRef);
-
-
-if (isLoggedIn === "true") {
-  window.location.href = "dashboard.html";
-  return;
-}
-
-
-if (adminDoc.exists()) {
-  let data = adminDoc.data();
-  let now = new Date();
-  let adminTime = new Date(data.time);
-
-  if (now - adminTime < 10 * 60 * 1000) {
-    alert("⚠️ Admin already active on another device!");
+  let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
+  if (isLoggedIn === "true") {
+    window.location.replace("dashboard.html");
     return;
   }
-}
+
+  let adminRef = doc(db, "admin", "location");
+  let adminDoc = await getDoc(adminRef);
+
+  if (adminDoc.exists()) {
+    let data = adminDoc.data();
+    let now = new Date();
+    let adminTime = new Date(data.time);
+
+    if (now - adminTime < 2 * 60 * 1000) {
+      alert("⚠️ Admin already active on another device!");
+      return;
+    }
+  }
 
   if (username === "paarthhaaa" && password === "010407") {
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      let lat = position.coords.latitude;
-      let lon = position.coords.longitude;
 
-      await setDoc(adminRef, {
-        lat,
-        lon,
-        time: new Date().toISOString()
-      });
+    
+    let lastUpdateTime = 0;
 
-      localStorage.setItem("isAdminLoggedIn", "true");
+    watchId = navigator.geolocation.watchPosition(async (position) => {
+      let now = Date.now();
 
-      alert("✅ Login success!");
-      window.location.href = "dashboard.html";
+      
+      if (now - lastUpdateTime > 5000) {
+        lastUpdateTime = now;
+
+        let lat = position.coords.latitude;
+        let lon = position.coords.longitude;
+
+        await setDoc(doc(db, "admin", "location"), {
+          lat,
+          lon,
+          time: new Date().toISOString()
+        });
+
+        console.log("📍 Live location:", lat, lon);
+      }
 
     }, () => {
       alert("Enable location!");
+    }, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 5000
     });
+
+    localStorage.setItem("isAdminLoggedIn", "true");
+
+    alert("✅ Login success!");
+    window.location.replace("dashboard.html");
 
   } else {
     alert("Invalid login!");
   }
 };
 
+
+
 if (window.location.pathname.includes("admin.html")) {
   let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
-
   if (isLoggedIn === "true") {
-    window.location.href = "dashboard.html";
+    window.location.replace("dashboard.html");
   }
 }
+
 
 
 let form = document.getElementById("studentForm");
@@ -137,7 +153,6 @@ if (form) {
       return;
     }
 
-
     let q = query(collection(db, "attendance"), where("regno", "==", regno));
     let snapshot = await getDocs(q);
 
@@ -159,7 +174,8 @@ if (form) {
         adminLoc.lon
       );
 
-      if (distance > 5.5) {
+    
+      if (distance > 0.04) {
         alert("❌ Not near bus!");
         return;
       }
@@ -174,7 +190,7 @@ if (form) {
 
       alert("✅ Attendance marked!");
       form.reset();
-      window.location.href ="index.html";
+      window.location.replace("index.html");
 
     }, () => {
       alert("Enable location!");
@@ -191,27 +207,23 @@ if (table) {
     table.innerHTML = "";
 
     let now = new Date();
-    let count = 0;
+    let index = 1;
 
-let index = 1; // 🔥 serial number
+    snapshot.forEach((docData) => {
+      let s = docData.data();
+      let recordTime = new Date(s.time);
 
-snapshot.forEach((docData) => {
-  let s = docData.data();
-  let recordTime = new Date(s.time);
+      if (now - recordTime <= 12 * 60 * 60 * 1000) {
+        let row = table.insertRow();
 
-  if (now - recordTime <= 12 * 60 * 60 * 1000) {
-    let row = table.insertRow();
-
-    row.insertCell(0).innerText = index++; // ✅ S.No
-    row.insertCell(1).innerText = s.name;
-    row.insertCell(2).innerText = s.regno;
-    row.insertCell(3).innerText = s.dept;
-    row.insertCell(4).innerText = s.stop;
-    row.insertCell(5).innerText = recordTime.toLocaleString();
-  }
-});
-
-    console.log("Total students:", count);
+        row.insertCell(0).innerText = index++;
+        row.insertCell(1).innerText = s.name;
+        row.insertCell(2).innerText = s.regno;
+        row.insertCell(3).innerText = s.dept;
+        row.insertCell(4).innerText = s.stop;
+        row.insertCell(5).innerText = recordTime.toLocaleString();
+      }
+    });
   });
 }
 
@@ -219,21 +231,25 @@ snapshot.forEach((docData) => {
 
 globalThis.logout = async function () {
   let confirmLogout = confirm("Logout?");
-
   if (!confirmLogout) return;
 
   try {
     await deleteDoc(doc(db, "admin", "location"));
   } catch (err) {
-    console.log("Error deleting admin:", err);
+    console.log(err);
   }
 
-  // 🔥 clear local session
-  localStorage.clear();
+  
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+  }
 
-  // 🔥 force reload + redirect
-  window.location.href = "index.html";
+  localStorage.removeItem("isAdminLoggedIn");
+
+  window.location.replace("index.html");
 };
+
+
 
 function getDistance(lat1, lon1, lat2, lon2) {
   let R = 6371;
@@ -251,12 +267,6 @@ function getDistance(lat1, lon1, lat2, lon2) {
 }
 
 
-globalThis.toggleMenu = function () {
-  let menu = document.getElementById("navLinks");
-  menu.classList.toggle("active");
-};
-
-
 
 globalThis.downloadData = async function () {
   let querySnapshot = await getDocs(collection(db, "attendance"));
@@ -267,6 +277,7 @@ globalThis.downloadData = async function () {
   }
 
   let csv = "S.no,Name,RegNo,Dept,Stop,Time\n";
+  let index = 1;
 
   querySnapshot.forEach((doc) => {
     let s = doc.data();
@@ -283,6 +294,7 @@ globalThis.downloadData = async function () {
 };
 
 
+
 globalThis.downloadPDF = async function () {
   let querySnapshot = await getDocs(collection(db, "attendance"));
 
@@ -295,14 +307,15 @@ globalThis.downloadPDF = async function () {
   let pdf = new jsPDF();
 
   let rows = [];
+  let index = 1;
 
   querySnapshot.forEach((doc) => {
     let s = doc.data();
-    rows.push([index++,s.name, s.regno, s.dept, s.stop, s.time]);
+    rows.push([index++, s.name, s.regno, s.dept, s.stop, s.time]);
   });
 
   pdf.autoTable({
-    head: [["S.no","Name", "Reg No", "Dept", "Stop", "Time"]],
+    head: [["S.no", "Name", "Reg No", "Dept", "Stop", "Time"]],
     body: rows
   });
 
@@ -310,15 +323,13 @@ globalThis.downloadPDF = async function () {
 };
 
 
-
 globalThis.printTable = function () {
   window.print();
 };
 
-if (window.location.pathname.includes("admin.html")) {
-  let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
 
-  if (isLoggedIn === "true") {
-    window.location.href = "dashboard.html";
-  }
-}
+
+globalThis.toggleMenu = function () {
+  let menu = document.getElementById("navLinks");
+  menu.classList.toggle("active");
+};
