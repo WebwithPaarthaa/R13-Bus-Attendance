@@ -85,7 +85,7 @@ globalThis.adminLogin = async function () {
       let now = Date.now();
 
       
-      if (now - lastUpdateTime > 5000) {
+      if (now - lastUpdateTime > 50000) {
         lastUpdateTime = now;
 
         let lat = position.coords.latitude;
@@ -175,7 +175,7 @@ if (form) {
       );
 
     
-      if (distance > 0.04) {
+      if (distance > 2.0) {
         alert("❌ Not near bus!");
         return;
       }
