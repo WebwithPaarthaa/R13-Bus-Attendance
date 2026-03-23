@@ -26,17 +26,34 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let watchId = null;
-let isChecking = false;
+let sessionChecked = false;
 
+/* ---------------- SAFE INIT ---------------- */
 
+document.addEventListener("DOMContentLoaded", () => {
+  const path = window.location.pathname;
 
-if (window.location.pathname.includes("dashboard.html")) {
-  checkAdminSession();
-}
+  // DASHBOARD
+  if (path.includes("dashboard.html")) {
+    safeCheckAdmin();
+  }
 
-async function checkAdminSession() {
-  if (isChecking) return;
-  isChecking = true;
+  // ADMIN PAGE
+  if (path.includes("admin.html")) {
+    setTimeout(() => {
+      let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
+      if (isLoggedIn === "true") {
+        window.location.replace("dashboard.html");
+      }
+    }, 500);
+  }
+});
+
+/* ---------------- FIXED SESSION CHECK ---------------- */
+
+async function safeCheckAdmin() {
+  if (sessionChecked) return;
+  sessionChecked = true;
 
   let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
 
@@ -45,17 +62,21 @@ async function checkAdminSession() {
     return;
   }
 
-  let adminRef = doc(db, "admin", "location");
-  let adminDoc = await getDoc(adminRef);
+  try {
+    let adminRef = doc(db, "admin", "location");
+    let adminDoc = await getDoc(adminRef);
 
-  if (!adminDoc.exists()) {
-    localStorage.removeItem("isAdminLoggedIn");
-    window.location.replace("admin.html");
+    if (!adminDoc.exists()) {
+      localStorage.removeItem("isAdminLoggedIn");
+      window.location.replace("admin.html");
+    }
+
+  } catch (err) {
+    console.log("Firebase delay ignored");
   }
-
-  isChecking = false;
 }
 
+/* ---------------- ADMIN LOGIN ---------------- */
 
 globalThis.adminLogin = async function () {
   let username = document.getElementById("adminUser").value;
@@ -68,9 +89,7 @@ globalThis.adminLogin = async function () {
 
   let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
   if (isLoggedIn === "true") {
-    if (!window.location.pathname.includes("dashboard.html")) {
-      window.location.replace("dashboard.html");
-    }
+    window.location.replace("dashboard.html");
     return;
   }
 
@@ -83,14 +102,13 @@ globalThis.adminLogin = async function () {
     let adminTime = new Date(data.time);
 
     if (now - adminTime < 2 * 60 * 1000) {
-      alert("⚠️ Admin already active on another device!");
+      alert("⚠️ Admin already active!");
       return;
     }
   }
 
   if (username === "paarthhaaa" && password === "010407") {
 
-    
     localStorage.setItem("isAdminLoggedIn", "true");
 
     let lastUpdateTime = 0;
@@ -98,50 +116,27 @@ globalThis.adminLogin = async function () {
     watchId = navigator.geolocation.watchPosition(async (position) => {
       let now = Date.now();
 
-      if (now - lastUpdateTime > 5000000) {
+      if (now - lastUpdateTime > 5000) {
         lastUpdateTime = now;
 
-        let lat = position.coords.latitude;
-        let lon = position.coords.longitude;
-
         await setDoc(doc(db, "admin", "location"), {
-          lat,
-          lon,
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
           time: new Date().toISOString()
         });
-
-        console.log("📍 Live location:", lat, lon);
       }
 
-    }, () => {
-      alert("Enable location!");
-    }, {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 5000
     });
 
     alert("✅ Login success!");
-
-    if (!window.location.pathname.includes("dashboard.html")) {
-      window.location.replace("dashboard.html");
-    }
+    window.location.replace("dashboard.html");
 
   } else {
     alert("Invalid login!");
   }
 };
 
-
-if (window.location.pathname.includes("admin.html")) {
-  setTimeout(() => {
-    let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
-    if (isLoggedIn === "true") {
-      window.location.replace("dashboard.html");
-    }
-  }, 300);
-}
-
+/* ---------------- STUDENT FORM ---------------- */
 
 let form = document.getElementById("studentForm");
 
@@ -159,18 +154,18 @@ if (form) {
       return;
     }
 
-    let adminRef = doc(db, "admin", "location");
-    let adminSnap = await getDoc(adminRef);
+    let adminSnap = await getDoc(doc(db, "admin", "location"));
 
     if (!adminSnap.exists()) {
       alert("Admin not active!");
       return;
     }
 
-    let q = query(collection(db, "attendance"), where("regno", "==", regno));
-    let snapshot = await getDocs(q);
+    let existing = await getDocs(
+      query(collection(db, "attendance"), where("regno", "==", regno))
+    );
 
-    if (!snapshot.empty) {
+    if (!existing.empty) {
       alert("⚠️ Already marked!");
       return;
     }
@@ -178,12 +173,9 @@ if (form) {
     let adminLoc = adminSnap.data();
 
     navigator.geolocation.getCurrentPosition(async (position) => {
-      let studentLat = position.coords.latitude;
-      let studentLon = position.coords.longitude;
-
       let distance = getDistance(
-        studentLat,
-        studentLon,
+        position.coords.latitude,
+        position.coords.longitude,
         adminLoc.lat,
         adminLoc.lon
       );
@@ -204,59 +196,45 @@ if (form) {
       alert("✅ Attendance marked!");
       form.reset();
       window.location.replace("index.html");
-
-    }, () => {
-      alert("Enable location!");
     });
   });
 }
+
+/* ---------------- TABLE ---------------- */
 
 let table = document.getElementById("table");
 
 if (table) {
   onSnapshot(collection(db, "attendance"), (snapshot) => {
     table.innerHTML = "";
-
-    let now = new Date();
     let index = 1;
 
     snapshot.forEach((docData) => {
       let s = docData.data();
-      let recordTime = new Date(s.time);
+      let row = table.insertRow();
 
-      if (now - recordTime <= 12 * 60 * 60 * 1000) {
-        let row = table.insertRow();
-
-        row.insertCell(0).innerText = index++;
-        row.insertCell(1).innerText = s.name;
-        row.insertCell(2).innerText = s.regno;
-        row.insertCell(3).innerText = s.dept;
-        row.insertCell(4).innerText = s.stop;
-        row.insertCell(5).innerText = recordTime.toLocaleString();
-      }
+      row.insertCell(0).innerText = index++;
+      row.insertCell(1).innerText = s.name;
+      row.insertCell(2).innerText = s.regno;
+      row.insertCell(3).innerText = s.dept;
+      row.insertCell(4).innerText = s.stop;
+      row.insertCell(5).innerText = new Date(s.time).toLocaleString();
     });
   });
 }
 
+/* ---------------- LOGOUT ---------------- */
 
 globalThis.logout = async function () {
-  let confirmLogout = confirm("Logout?");
-  if (!confirmLogout) return;
+  await deleteDoc(doc(db, "admin", "location"));
 
-  try {
-    await deleteDoc(doc(db, "admin", "location"));
-  } catch (err) {
-    console.log(err);
-  }
-
-  if (watchId !== null) {
-    navigator.geolocation.clearWatch(watchId);
-  }
+  if (watchId) navigator.geolocation.clearWatch(watchId);
 
   localStorage.removeItem("isAdminLoggedIn");
-
   window.location.replace("index.html");
 };
+
+/* ---------------- DISTANCE ---------------- */
 
 function getDistance(lat1, lon1, lat2, lon2) {
   let R = 6371;
@@ -269,74 +247,5 @@ function getDistance(lat1, lon1, lat2, lon2) {
     Math.cos(lat2 * Math.PI / 180) *
     Math.sin(dLon / 2) ** 2;
 
-  let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
-
-
-globalThis.downloadData = async function () {
-  let querySnapshot = await getDocs(collection(db, "attendance"));
-
-  if (querySnapshot.empty) {
-    alert("No data!");
-    return;
-  }
-
-  let csv = "S.no,Name,RegNo,Dept,Stop,Time\n";
-  let index = 1;
-
-  querySnapshot.forEach((doc) => {
-    let s = doc.data();
-    csv += `${index++},${s.name},${s.regno},${s.dept},${s.stop},${s.time}\n`;
-  });
-
-  let blob = new Blob([csv], { type: "text/csv" });
-  let url = URL.createObjectURL(blob);
-
-  let a = document.createElement("a");
-  a.href = url;
-  a.download = "attendance.csv";
-  a.click();
-};
-
-
-
-globalThis.downloadPDF = async function () {
-  let querySnapshot = await getDocs(collection(db, "attendance"));
-
-  if (querySnapshot.empty) {
-    alert("No data!");
-    return;
-  }
-
-  const { jsPDF } = window.jspdf;
-  let pdf = new jsPDF();
-
-  let rows = [];
-  let index = 1;
-
-  querySnapshot.forEach((doc) => {
-    let s = doc.data();
-    rows.push([index++, s.name, s.regno, s.dept, s.stop, s.time]);
-  });
-
-  pdf.autoTable({
-    head: [["S.no", "Name", "Reg No", "Dept", "Stop", "Time"]],
-    body: rows
-  });
-
-  pdf.save("attendance.pdf");
-};
-
-
-
-globalThis.printTable = function () {
-  window.print();
-};
-
-
-
-globalThis.toggleMenu = function () {
-  let menu = document.getElementById("navLinks");
-  menu.classList.toggle("active");
-};
