@@ -13,6 +13,8 @@ import {
   where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+/* ---------------- FIREBASE ---------------- */
+
 const firebaseConfig = {
   apiKey: "AIzaSyAQE3YS9XzLDRPiJT3elk9uQPeWJgi7Gqg",
   authDomain: "r13-busattendance-76f86.firebaseapp.com",
@@ -25,10 +27,24 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+/* ---------------- GLOBAL CONTROL ---------------- */
+
 let watchId = null;
+let redirecting = false;
 let sessionChecked = false;
 
-/* ---------------- SAFE INIT ---------------- */
+/* ---------------- SAFE REDIRECT ---------------- */
+
+function safeRedirect(page) {
+  if (redirecting) return;
+
+  if (!window.location.pathname.includes(page)) {
+    redirecting = true;
+    window.location.href = page;
+  }
+}
+
+/* ---------------- INIT ---------------- */
 
 document.addEventListener("DOMContentLoaded", () => {
   const path = window.location.pathname;
@@ -43,13 +59,13 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
       if (isLoggedIn === "true") {
-        window.location.replace("dashboard.html");
+        safeRedirect("dashboard.html");
       }
     }, 500);
   }
 });
 
-/* ---------------- FIXED SESSION CHECK ---------------- */
+/* ---------------- SESSION CHECK ---------------- */
 
 async function safeCheckAdmin() {
   if (sessionChecked) return;
@@ -58,7 +74,7 @@ async function safeCheckAdmin() {
   let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
 
   if (isLoggedIn !== "true") {
-    window.location.replace("admin.html");
+    safeRedirect("admin.html");
     return;
   }
 
@@ -68,7 +84,7 @@ async function safeCheckAdmin() {
 
     if (!adminDoc.exists()) {
       localStorage.removeItem("isAdminLoggedIn");
-      window.location.replace("admin.html");
+      safeRedirect("admin.html");
     }
 
   } catch (err) {
@@ -89,7 +105,7 @@ globalThis.adminLogin = async function () {
 
   let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
   if (isLoggedIn === "true") {
-    window.location.replace("dashboard.html");
+    safeRedirect("dashboard.html");
     return;
   }
 
@@ -125,11 +141,10 @@ globalThis.adminLogin = async function () {
           time: new Date().toISOString()
         });
       }
-
     });
 
     alert("✅ Login success!");
-    window.location.replace("dashboard.html");
+    safeRedirect("dashboard.html");
 
   } else {
     alert("Invalid login!");
@@ -180,7 +195,7 @@ if (form) {
         adminLoc.lon
       );
 
-      if (distance > 2.04) {
+      if (distance > 0.04) {
         alert("❌ Not near bus!");
         return;
       }
@@ -195,7 +210,7 @@ if (form) {
 
       alert("✅ Attendance marked!");
       form.reset();
-      window.location.replace("index.html");
+      safeRedirect("index.html");
     });
   });
 }
@@ -231,7 +246,7 @@ globalThis.logout = async function () {
   if (watchId) navigator.geolocation.clearWatch(watchId);
 
   localStorage.removeItem("isAdminLoggedIn");
-  window.location.replace("index.html");
+  safeRedirect("index.html");
 };
 
 /* ---------------- DISTANCE ---------------- */
@@ -249,3 +264,72 @@ function getDistance(lat1, lon1, lat2, lon2) {
 
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
+
+/* ---------------- DOWNLOAD CSV ---------------- */
+
+globalThis.downloadData = async function () {
+  let querySnapshot = await getDocs(collection(db, "attendance"));
+
+  if (querySnapshot.empty) {
+    alert("No data!");
+    return;
+  }
+
+  let csv = "S.no,Name,RegNo,Dept,Stop,Time\n";
+  let index = 1;
+
+  querySnapshot.forEach((doc) => {
+    let s = doc.data();
+    csv += `${index++},${s.name},${s.regno},${s.dept},${s.stop},${s.time}\n`;
+  });
+
+  let blob = new Blob([csv], { type: "text/csv" });
+  let url = URL.createObjectURL(blob);
+
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "attendance.csv";
+  a.click();
+};
+
+/* ---------------- PDF ---------------- */
+
+globalThis.downloadPDF = async function () {
+  let querySnapshot = await getDocs(collection(db, "attendance"));
+
+  if (querySnapshot.empty) {
+    alert("No data!");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  let pdf = new jsPDF();
+
+  let rows = [];
+  let index = 1;
+
+  querySnapshot.forEach((doc) => {
+    let s = doc.data();
+    rows.push([index++, s.name, s.regno, s.dept, s.stop, s.time]);
+  });
+
+  pdf.autoTable({
+    head: [["S.no", "Name", "Reg No", "Dept", "Stop", "Time"]],
+    body: rows
+  });
+
+  pdf.save("attendance.pdf");
+};
+
+/* ---------------- PRINT ---------------- */
+
+globalThis.printTable = function () {
+  window.print();
+};
+
+/* ---------------- MENU ---------------- */
+
+globalThis.toggleMenu = function () {
+  let menu = document.getElementById("navLinks");
+  menu.classList.toggle("active");
+};
