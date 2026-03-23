@@ -20,15 +20,14 @@ const firebaseConfig = {
   storageBucket: "r13-busattendance-76f86.firebasestorage.app",
   messagingSenderId: "449329724909",
   appId: "1:449329724909:web:aaaf40d103bc9959b33be4",
-  authDomain: "r13-busattendance-76f86.firebaseapp.com",
-  projectId: "r13-busattendance-76f86",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-
 let watchId = null;
+let isChecking = false;
+
 
 
 if (window.location.pathname.includes("dashboard.html")) {
@@ -36,15 +35,26 @@ if (window.location.pathname.includes("dashboard.html")) {
 }
 
 async function checkAdminSession() {
-  let adminRef = doc(db, "admin", "location");
-  let adminDoc = await getDoc(adminRef);
+  if (isChecking) return;
+  isChecking = true;
+
   let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
 
-  if (!adminDoc.exists() || isLoggedIn !== "true") {
+  if (isLoggedIn !== "true") {
+    window.location.replace("admin.html");
+    return;
+  }
+
+  let adminRef = doc(db, "admin", "location");
+  let adminDoc = await getDoc(adminRef);
+
+  if (!adminDoc.exists()) {
+    localStorage.removeItem("isAdminLoggedIn");
     window.location.replace("admin.html");
   }
-}
 
+  isChecking = false;
+}
 
 
 globalThis.adminLogin = async function () {
@@ -58,7 +68,9 @@ globalThis.adminLogin = async function () {
 
   let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
   if (isLoggedIn === "true") {
-    window.location.replace("dashboard.html");
+    if (!window.location.pathname.includes("dashboard.html")) {
+      window.location.replace("dashboard.html");
+    }
     return;
   }
 
@@ -79,13 +91,14 @@ globalThis.adminLogin = async function () {
   if (username === "paarthhaaa" && password === "010407") {
 
     
+    localStorage.setItem("isAdminLoggedIn", "true");
+
     let lastUpdateTime = 0;
 
     watchId = navigator.geolocation.watchPosition(async (position) => {
       let now = Date.now();
 
-      
-      if (now - lastUpdateTime > 50000) {
+      if (now - lastUpdateTime > 5000) {
         lastUpdateTime = now;
 
         let lat = position.coords.latitude;
@@ -108,10 +121,11 @@ globalThis.adminLogin = async function () {
       timeout: 5000
     });
 
-    localStorage.setItem("isAdminLoggedIn", "true");
-
     alert("✅ Login success!");
-    window.location.replace("dashboard.html");
+
+    if (!window.location.pathname.includes("dashboard.html")) {
+      window.location.replace("dashboard.html");
+    }
 
   } else {
     alert("Invalid login!");
@@ -119,14 +133,14 @@ globalThis.adminLogin = async function () {
 };
 
 
-
 if (window.location.pathname.includes("admin.html")) {
-  let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
-  if (isLoggedIn === "true") {
-    window.location.replace("dashboard.html");
-  }
+  setTimeout(() => {
+    let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
+    if (isLoggedIn === "true") {
+      window.location.replace("dashboard.html");
+    }
+  }, 300);
 }
-
 
 
 let form = document.getElementById("studentForm");
@@ -174,8 +188,7 @@ if (form) {
         adminLoc.lon
       );
 
-    
-      if (distance > 2.0) {
+      if (distance > 2.04) {
         alert("❌ Not near bus!");
         return;
       }
@@ -197,8 +210,6 @@ if (form) {
     });
   });
 }
-
-
 
 let table = document.getElementById("table");
 
@@ -228,7 +239,6 @@ if (table) {
 }
 
 
-
 globalThis.logout = async function () {
   let confirmLogout = confirm("Logout?");
   if (!confirmLogout) return;
@@ -239,7 +249,6 @@ globalThis.logout = async function () {
     console.log(err);
   }
 
-  
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
   }
@@ -248,8 +257,6 @@ globalThis.logout = async function () {
 
   window.location.replace("index.html");
 };
-
-
 
 function getDistance(lat1, lon1, lat2, lon2) {
   let R = 6371;
@@ -265,7 +272,6 @@ function getDistance(lat1, lon1, lat2, lon2) {
   let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
-
 
 
 globalThis.downloadData = async function () {
@@ -321,6 +327,7 @@ globalThis.downloadPDF = async function () {
 
   pdf.save("attendance.pdf");
 };
+
 
 
 globalThis.printTable = function () {
