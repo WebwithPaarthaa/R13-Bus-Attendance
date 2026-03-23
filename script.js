@@ -98,7 +98,7 @@ globalThis.adminLogin = async function () {
     watchId = navigator.geolocation.watchPosition(async (position) => {
       let now = Date.now();
 
-      if (now - lastUpdateTime > 5000) {
+      if (now - lastUpdateTime > 5000000) {
         lastUpdateTime = now;
 
         let lat = position.coords.latitude;
