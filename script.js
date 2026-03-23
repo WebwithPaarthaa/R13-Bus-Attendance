@@ -14,7 +14,7 @@ async function checkAdminSession() {
     return;
   }
 
-  // ✅ Admin exists → stay
+  
 }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
@@ -266,11 +266,11 @@ globalThis.downloadData = async function () {
     return;
   }
 
-  let csv = "Name,RegNo,Dept,Stop,Time\n";
+  let csv = "S.no,Name,RegNo,Dept,Stop,Time\n";
 
   querySnapshot.forEach((doc) => {
     let s = doc.data();
-    csv += `${s.name},${s.regno},${s.dept},${s.stop},${s.time}\n`;
+    csv += `${index++},${s.name},${s.regno},${s.dept},${s.stop},${s.time}\n`;
   });
 
   let blob = new Blob([csv], { type: "text/csv" });
@@ -298,11 +298,11 @@ globalThis.downloadPDF = async function () {
 
   querySnapshot.forEach((doc) => {
     let s = doc.data();
-    rows.push([s.name, s.regno, s.dept, s.stop, s.time]);
+    rows.push([index++,s.name, s.regno, s.dept, s.stop, s.time]);
   });
 
   pdf.autoTable({
-    head: [["Name", "Reg No", "Dept", "Stop", "Time"]],
+    head: [["S.no","Name", "Reg No", "Dept", "Stop", "Time"]],
     body: rows
   });
 
