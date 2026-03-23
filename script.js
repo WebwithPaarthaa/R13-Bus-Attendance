@@ -159,7 +159,7 @@ if (form) {
         adminLoc.lon
       );
 
-      if (distance > 0.05) {
+      if (distance > 0.5) {
         alert("❌ Not near bus!");
         return;
       }
