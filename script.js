@@ -15,14 +15,14 @@ import {
 
 /* ---------------- FIREBASE ---------------- */
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAQE3YS9XzLDRPiJT3elk9uQPeWJgi7Gqg",
-  authDomain: "r13-busattendance-76f86.firebaseapp.com",
-  projectId: "r13-busattendance-76f86",
-  storageBucket: "r13-busattendance-76f86.firebasestorage.app",
-  messagingSenderId: "449329724909",
-  appId: "1:449329724909:web:aaaf40d103bc9959b33be4",
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyBjZke6LDz-TosBALMtT3bZLOj0uEhc3y0",
+    authDomain: "r13-busattendance-b9ceb.firebaseapp.com",
+    projectId: "r13-busattendance-b9ceb",
+    storageBucket: "r13-busattendance-b9ceb.firebasestorage.app",
+    messagingSenderId: "603027262034",
+    appId: "1:603027262034:web:75c19f4498942fff2f2d8b"
+  };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
