@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (isLoggedIn === "true") {
         safeRedirect("dashboard.html");
       }
-    }, 500);
+    }, );
   }
 });
 
