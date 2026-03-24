@@ -127,21 +127,35 @@ globalThis.adminLogin = async function () {
 
     localStorage.setItem("isAdminLoggedIn", "true");
 
-    let lastUpdateTime = 0;
+    if (!navigator.geolocation) {
+  alert("Geolocation not supported!");
+  return;
+}
 
-    watchId = navigator.geolocation.watchPosition(async (position) => {
-      let now = Date.now();
+navigator.geolocation.getCurrentPosition(
+  async (position) => {
 
-      if (now - lastUpdateTime > 5000) {
-        lastUpdateTime = now;
+    console.log("📍 Got location");
 
-        await setDoc(doc(db, "admin", "location"), {
-          lat: position.coords.latitude,
-          lon: position.coords.longitude,
-          time: new Date().toISOString()
-        });
-      }
-    });
+    try {
+      await setDoc(doc(db, "admin", "location"), {
+        lat: position.coords.latitude,
+        lon: position.coords.longitude,
+        time: new Date().toISOString()
+      });
+
+      console.log("🔥 Data stored in Firebase");
+
+    } catch (err) {
+      console.error("❌ Firebase error:", err);
+    }
+
+  },
+  (error) => {
+    console.error("❌ Location error:", error);
+    alert("Enable location permission!");
+  }
+);
 
     alert("✅ Login success!");
     safeRedirect("dashboard.html");
