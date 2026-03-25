@@ -21,9 +21,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// ---------------- GLOBAL ----------------
 let cachedAdmin = null;
 let cachedStudentLoc = null;
 let isSubmitting = false;
+
+// 🔐 Unique admin session
+let adminSessionId = localStorage.getItem("adminSessionId");
+if (!adminSessionId) {
+  adminSessionId = Date.now().toString();
+  localStorage.setItem("adminSessionId", adminSessionId);
+}
 
 // ---------------- SAFE REDIRECT ----------------
 function safeRedirect(page) {
@@ -85,16 +93,28 @@ globalThis.adminLogin = async function () {
     return;
   }
 
+  let snap = await getDoc(doc(db, "admin", "location"));
+
+  if (snap.exists()) {
+    let data = snap.data();
+
+    // 🔒 block other admin devices
+    if (data.active === true && data.sessionId !== adminSessionId) {
+      alert("⚠️ Another admin is already active!");
+      return;
+    }
+  }
+
   navigator.geolocation.getCurrentPosition(
     async (position) => {
       await setDoc(doc(db, "admin", "location"), {
         lat: position.coords.latitude,
         lon: position.coords.longitude,
         time: new Date().toISOString(),
-        active: true
+        active: true,
+        sessionId: adminSessionId
       });
 
-      // update cache immediately
       cachedAdmin = {
         lat: position.coords.latitude,
         lon: position.coords.longitude,
@@ -156,7 +176,7 @@ if (form) {
         adminLoc.lon
       );
 
-      if (distance > 30.04) {
+      if (distance > 5.04) {
         throw new Error("❌ Not near bus!");
       }
 
@@ -224,10 +244,14 @@ globalThis.logout = async function () {
 
   if (snap.exists()) {
     let data = snap.data();
-    await setDoc(doc(db, "admin", "location"), {
-      ...data,
-      active: false
-    });
+
+    // only same admin can logout
+    if (data.sessionId === adminSessionId) {
+      await setDoc(doc(db, "admin", "location"), {
+        ...data,
+        active: false
+      });
+    }
   }
 
   localStorage.removeItem("isAdminLoggedIn");
