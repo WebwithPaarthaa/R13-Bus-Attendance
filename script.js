@@ -26,6 +26,9 @@ let cachedAdmin = null;
 let cachedStudentLoc = null;
 let isSubmitting = false;
 
+// ✅ DATE BASED
+const today = new Date().toISOString().split("T")[0];
+
 // 🔐 Unique admin session
 let adminSessionId = localStorage.getItem("adminSessionId");
 if (!adminSessionId) {
@@ -43,6 +46,7 @@ function safeRedirect(page) {
 document.addEventListener("DOMContentLoaded", async () => {
   const path = window.location.pathname;
 
+  // cache student location once
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (pos) => (cachedStudentLoc = pos),
@@ -78,7 +82,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// ---------------- ADMIN LOGIN ----------------
+// ---------------- ADMIN LOGIN + LIVE TRACKING ----------------
 globalThis.adminLogin = async function () {
   let username = document.getElementById("adminUser").value;
   let password = document.getElementById("adminPass").value;
@@ -97,38 +101,44 @@ globalThis.adminLogin = async function () {
 
   if (snap.exists()) {
     let data = snap.data();
-
-    // 🔒 block other admin devices
     if (data.active === true && data.sessionId !== adminSessionId) {
       alert("⚠️ Another admin is already active!");
       return;
     }
   }
 
-  navigator.geolocation.getCurrentPosition(
+  // ✅ LIVE TRACKING START
+  navigator.geolocation.watchPosition(
     async (position) => {
+      let lat = position.coords.latitude;
+      let lon = position.coords.longitude;
+
+      // update admin location (used for attendance)
       await setDoc(doc(db, "admin", "location"), {
-        lat: position.coords.latitude,
-        lon: position.coords.longitude,
+        lat,
+        lon,
         time: new Date().toISOString(),
         active: true,
         sessionId: adminSessionId
       });
 
-      cachedAdmin = {
-        lat: position.coords.latitude,
-        lon: position.coords.longitude,
-        active: true
-      };
+      // update live bus tracking
+      await setDoc(doc(db, "liveBus", "location"), {
+        lat,
+        lon,
+        time: new Date().toISOString()
+      });
 
-      localStorage.setItem("isAdminLoggedIn", "true");
-      window.location.href = "dashboard.html";
+      cachedAdmin = { lat, lon, active: true };
     },
     (error) => {
       alert("Location error: " + error.message);
     },
     { enableHighAccuracy: true }
   );
+
+  localStorage.setItem("isAdminLoggedIn", "true");
+  window.location.href = "dashboard.html";
 };
 
 // ---------------- STUDENT FORM ----------------
@@ -180,7 +190,7 @@ if (form) {
         throw new Error("❌ Not near bus!");
       }
 
-      let docRef = doc(db, "attendance", regno);
+      let docRef = doc(db, "attendance", today, "students", regno);
       let existing = await getDoc(docRef);
 
       if (existing.exists()) {
@@ -219,7 +229,7 @@ if (form) {
 let table = document.getElementById("tableBody");
 
 if (table) {
-  onSnapshot(collection(db, "attendance"), (snapshot) => {
+  onSnapshot(collection(db, "attendance", today, "students"), (snapshot) => {
     table.innerHTML = "";
     let index = 1;
 
@@ -238,14 +248,20 @@ if (table) {
   });
 }
 
+// ---------------- LIVE BUS LISTENER (OPTIONAL UI USE) ----------------
+onSnapshot(doc(db, "liveBus", "location"), (snap) => {
+  if (snap.exists()) {
+    let data = snap.data();
+    console.log("🚌 Live Bus:", data.lat, data.lon);
+  }
+});
+
 // ---------------- LOGOUT ----------------
 globalThis.logout = async function () {
   let snap = await getDoc(doc(db, "admin", "location"));
 
   if (snap.exists()) {
     let data = snap.data();
-
-    // only same admin can logout
     if (data.sessionId === adminSessionId) {
       await setDoc(doc(db, "admin", "location"), {
         ...data,
@@ -271,56 +287,4 @@ function getDistance(lat1, lon1, lat2, lon2) {
     Math.sin(dLon / 2) ** 2;
 
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-// ---------------- DOWNLOAD ----------------
-globalThis.downloadData = async function () {
-  let snapshot = await getDocs(collection(db, "attendance"));
-
-  let csv = "S.no,Name,RegNo,Dept,Stop,Time\n";
-  let i = 1;
-
-  snapshot.forEach((doc) => {
-    let s = doc.data();
-    csv += `${i++},${s.name},${s.regno},${s.dept},${s.stop},${s.time}\n`;
-  });
-
-  let blob = new Blob([csv], { type: "text/csv" });
-  let url = URL.createObjectURL(blob);
-
-  let a = document.createElement("a");
-  a.href = url;
-  a.download = "attendance.csv";
-  a.click();
-};
-
-globalThis.downloadPDF = async function () {
-  let snapshot = await getDocs(collection(db, "attendance"));
-
-  const { jsPDF } = window.jspdf;
-  let pdf = new jsPDF();
-
-  let rows = [];
-  let i = 1;
-
-  snapshot.forEach((doc) => {
-    let s = doc.data();
-    rows.push([i++, s.name, s.regno, s.dept, s.stop, s.time]);
-  });
-
-  pdf.autoTable({
-    head: [["S.no", "Name", "RegNo", "Dept", "Stop", "Time"]],
-    body: rows
-  });
-
-  pdf.save("attendance.pdf");
-};
-
-// ---------------- PRINT + MENU ----------------
-globalThis.printTable = function () {
-  window.print();
-};
-
-globalThis.toggleMenu = function () {
-  document.getElementById("navLinks").classList.toggle("active");
-};
+        }
