@@ -101,24 +101,26 @@ globalThis.adminLogin = async function () {
     return;
   }
 
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      await setDoc(doc(db, "admin", "location"), {
-        lat: position.coords.latitude,
-        lon: position.coords.longitude,
-        time: new Date().toISOString(),
-        active: true
-      });
+  
+navigator.geolocation.getCurrentPosition(
+  async (position) => {
+    await setDoc(doc(db, "admin", "location"), {
+      lat: position.coords.latitude,
+      lon: position.coords.longitude,
+      time: new Date().toISOString(),
+      active: true
+    });
 
-      localStorage.setItem("isAdminLoggedIn", "true");
-      window.location.href = "dashboard.html";
-    },
-    (error) => {
-      alert("Location error: " + error.message);
-    }
-  );
-};
-
+    localStorage.setItem("isAdminLoggedIn", "true");
+    window.location.href = "dashboard.html";
+  },
+  (error) => {
+    alert("Location error: " + error.message);
+  },
+  {
+    enableHighAccuracy: true
+  }
+);
 
 let form = document.getElementById("studentForm");
 
