@@ -21,20 +21,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-
 let cachedAdmin = null;
 let cachedStudentLoc = null;
+let isSubmitting = false;
 
-
+// ---------------- SAFE REDIRECT ----------------
 function safeRedirect(page) {
   if (window.location.pathname.includes(page)) return;
   window.location.replace(page);
 }
 
-
+// ---------------- ON LOAD ----------------
 document.addEventListener("DOMContentLoaded", async () => {
   const path = window.location.pathname;
-
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -44,28 +43,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
   }
 
-
   try {
     let snap = await getDoc(doc(db, "admin", "location"));
     if (snap.exists()) cachedAdmin = snap.data();
   } catch {}
 
-
   if (path.includes("dashboard.html")) {
     let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
-    if (isLoggedIn !== "true") {
-      safeRedirect("admin.html");
-    }
+    if (isLoggedIn !== "true") safeRedirect("admin.html");
   }
-
 
   if (path.includes("admin.html")) {
     let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
-    if (isLoggedIn === "true") {
-      safeRedirect("dashboard.html");
-    }
+    if (isLoggedIn === "true") safeRedirect("dashboard.html");
   }
-
 
   let saved = localStorage.getItem("studentData");
   if (saved) {
@@ -79,13 +70,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-
+// ---------------- ADMIN LOGIN ----------------
 globalThis.adminLogin = async function () {
   let username = document.getElementById("adminUser").value;
   let password = document.getElementById("adminPass").value;
 
   if (!username || !password) {
-    alert("Wrong Entryy");
+    alert("Wrong Entry");
     return;
   }
 
@@ -94,55 +85,50 @@ globalThis.adminLogin = async function () {
     return;
   }
 
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      await setDoc(doc(db, "admin", "location"), {
+        lat: position.coords.latitude,
+        lon: position.coords.longitude,
+        time: new Date().toISOString(),
+        active: true
+      });
 
-  let snap = await getDoc(doc(db, "admin", "location"));
-  if (snap.exists() && snap.data().active === true) {
-    alert("⚠️ Admin already active!");
-    return;
-  }
+      // update cache immediately
+      cachedAdmin = {
+        lat: position.coords.latitude,
+        lon: position.coords.longitude,
+        active: true
+      };
 
-  
-navigator.geolocation.getCurrentPosition(
-  async (position) => {
-    await setDoc(doc(db, "admin", "location"), {
-      lat: position.coords.latitude,
-      lon: position.coords.longitude,
-      time: new Date().toISOString(),
-      active: true
-    });
+      localStorage.setItem("isAdminLoggedIn", "true");
+      window.location.href = "dashboard.html";
+    },
+    (error) => {
+      alert("Location error: " + error.message);
+    },
+    { enableHighAccuracy: true }
+  );
+};
 
-    localStorage.setItem("isAdminLoggedIn", "true");
-    window.location.href = "dashboard.html";
-  },
-  (error) => {
-    alert("Location error: " + error.message);
-  },
-  {
-    enableHighAccuracy: true
-  }
-);
-
+// ---------------- STUDENT FORM ----------------
 let form = document.getElementById("studentForm");
 
 if (form) {
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
+    if (isSubmitting) return;
+    isSubmitting = true;
+
     let btn = form.querySelector("button");
     btn.disabled = true;
     btn.innerText = "Marking...";
 
     let name = document.getElementById("name").value.trim();
-    let regno = document.getElementById("regno").value.trim();
+    let regno = document.getElementById("regno").value.trim().toUpperCase();
     let dept = document.getElementById("dept").value.trim();
     let stop = document.getElementById("stop").value.trim();
-
-    if (!name || !regno || !dept || !stop) {
-      alert("Fill all fields!");
-      btn.disabled = false;
-      btn.innerText = "Mark Attendance";
-      return;
-    }
 
     try {
       let position = cachedStudentLoc;
@@ -170,7 +156,7 @@ if (form) {
         adminLoc.lon
       );
 
-      if (distance > 5.5) {
+      if (distance > 0.04) {
         throw new Error("❌ Not near bus!");
       }
 
@@ -203,12 +189,13 @@ if (form) {
       alert(err.message);
     }
 
+    isSubmitting = false;
     btn.disabled = false;
     btn.innerText = "Mark Attendance";
   });
 }
 
-
+// ---------------- TABLE ----------------
 let table = document.getElementById("tableBody");
 
 if (table) {
@@ -231,13 +218,12 @@ if (table) {
   });
 }
 
-
+// ---------------- LOGOUT ----------------
 globalThis.logout = async function () {
   let snap = await getDoc(doc(db, "admin", "location"));
 
   if (snap.exists()) {
     let data = snap.data();
-
     await setDoc(doc(db, "admin", "location"), {
       ...data,
       active: false
@@ -248,6 +234,7 @@ globalThis.logout = async function () {
   window.location.href = "index.html";
 };
 
+// ---------------- DISTANCE ----------------
 function getDistance(lat1, lon1, lat2, lon2) {
   let R = 6371;
   let dLat = (lat2 - lat1) * Math.PI / 180;
@@ -262,7 +249,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-
+// ---------------- DOWNLOAD ----------------
 globalThis.downloadData = async function () {
   let snapshot = await getDocs(collection(db, "attendance"));
 
@@ -282,7 +269,6 @@ globalThis.downloadData = async function () {
   a.download = "attendance.csv";
   a.click();
 };
-
 
 globalThis.downloadPDF = async function () {
   let snapshot = await getDocs(collection(db, "attendance"));
@@ -306,11 +292,10 @@ globalThis.downloadPDF = async function () {
   pdf.save("attendance.pdf");
 };
 
-
+// ---------------- PRINT + MENU ----------------
 globalThis.printTable = function () {
   window.print();
 };
-
 
 globalThis.toggleMenu = function () {
   document.getElementById("navLinks").classList.toggle("active");
