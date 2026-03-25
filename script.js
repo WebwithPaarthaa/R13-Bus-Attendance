@@ -156,7 +156,7 @@ if (form) {
         adminLoc.lon
       );
 
-      if (distance > 0.04) {
+      if (distance > 10.04) {
         throw new Error("❌ Not near bus!");
       }
 
