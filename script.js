@@ -222,7 +222,7 @@ if (form) {
         adminLoc.lon
       );
 
-      if (distance > 20.04) {
+      if (distance > 2.00) {
         throw new Error("❌ Not near bus!");
       }
 
