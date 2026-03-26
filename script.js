@@ -5,7 +5,6 @@ import {
   setDoc,
   getDoc,
   collection,
-  getDocs,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -25,6 +24,7 @@ const db = getFirestore(app);
 let cachedAdmin = null;
 let cachedStudentLoc = null;
 let isSubmitting = false;
+let busWatchId = null;
 
 // ✅ DATE BASED
 const today = new Date().toISOString().split("T")[0];
@@ -42,11 +42,62 @@ function safeRedirect(page) {
   window.location.replace(page);
 }
 
+// ---------------- TOGGLE MENU ----------------
+// FIX: was never defined — onclick="toggleMenu()" in HTML was failing silently
+globalThis.toggleMenu = function () {
+  let nav = document.getElementById("navLinks");
+  if (nav) nav.classList.toggle("active");
+};
+
+// ---------------- START BUS TRACKING ----------------
+function startBusTracking() {
+  if (!navigator.geolocation) {
+    alert("Geolocation not supported on this device!");
+    return;
+  }
+
+  busWatchId = navigator.geolocation.watchPosition(
+    async (position) => {
+      let lat = position.coords.latitude;
+      let lon = position.coords.longitude;
+
+      try {
+        await setDoc(doc(db, "admin", "location"), {
+          lat,
+          lon,
+          time: new Date().toISOString(),
+          active: true,
+          sessionId: adminSessionId
+        });
+
+        await setDoc(doc(db, "liveBus", "location"), {
+          lat,
+          lon,
+          time: new Date().toISOString()
+        });
+
+        cachedAdmin = { lat, lon, active: true };
+
+        let el = document.getElementById("busLocation");
+        if (el) {
+          el.innerText = `🚌 Live: ${lat.toFixed(5)}, ${lon.toFixed(5)} — ${new Date().toLocaleTimeString()}`;
+        }
+      } catch (err) {
+        console.error("Firestore write error:", err.message);
+      }
+    },
+    (error) => {
+      console.error("Location error:", error.message);
+      alert("Location error: " + error.message);
+    },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+  );
+}
+
 // ---------------- ON LOAD ----------------
 document.addEventListener("DOMContentLoaded", async () => {
   const path = window.location.pathname;
 
-  // cache student location once
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (pos) => (cachedStudentLoc = pos),
@@ -60,16 +111,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (snap.exists()) cachedAdmin = snap.data();
   } catch {}
 
+  // ---------------- DASHBOARD PAGE ----------------
   if (path.includes("dashboard.html")) {
-    let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
-    if (isLoggedIn !== "true") safeRedirect("admin.html");
+    if (localStorage.getItem("isAdminLoggedIn") !== "true") {
+      safeRedirect("admin.html");
+      return;
+    }
+    startBusTracking();
   }
 
+  // ---------------- ADMIN LOGIN PAGE ----------------
   if (path.includes("admin.html")) {
-    let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
-    if (isLoggedIn === "true") safeRedirect("dashboard.html");
+    if (localStorage.getItem("isAdminLoggedIn") === "true") {
+      safeRedirect("dashboard.html");
+    }
   }
 
+  // restore saved student data
   let saved = localStorage.getItem("studentData");
   if (saved) {
     let data = JSON.parse(saved);
@@ -82,7 +140,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// ---------------- ADMIN LOGIN + LIVE TRACKING ----------------
+// ---------------- ADMIN LOGIN ----------------
 globalThis.adminLogin = async function () {
   let username = document.getElementById("adminUser").value;
   let password = document.getElementById("adminPass").value;
@@ -101,41 +159,14 @@ globalThis.adminLogin = async function () {
 
   if (snap.exists()) {
     let data = snap.data();
-    if (data.active === true && data.sessionId !== adminSessionId) {
+    let lastSeen = new Date(data.time).getTime();
+    let isRecent = (Date.now() - lastSeen) < 5 * 60 * 1000;
+
+    if (data.active === true && data.sessionId !== adminSessionId && isRecent) {
       alert("⚠️ Another admin is already active!");
       return;
     }
   }
-
-  // ✅ LIVE TRACKING START
-  navigator.geolocation.watchPosition(
-    async (position) => {
-      let lat = position.coords.latitude;
-      let lon = position.coords.longitude;
-
-      // update admin location (used for attendance)
-      await setDoc(doc(db, "admin", "location"), {
-        lat,
-        lon,
-        time: new Date().toISOString(),
-        active: true,
-        sessionId: adminSessionId
-      });
-
-      // update live bus tracking
-      await setDoc(doc(db, "liveBus", "location"), {
-        lat,
-        lon,
-        time: new Date().toISOString()
-      });
-
-      cachedAdmin = { lat, lon, active: true };
-    },
-    (error) => {
-      alert("Location error: " + error.message);
-    },
-    { enableHighAccuracy: true }
-  );
 
   localStorage.setItem("isAdminLoggedIn", "true");
   window.location.href = "dashboard.html";
@@ -169,15 +200,20 @@ if (form) {
         });
       }
 
-      let adminLoc = cachedAdmin;
-
-      if (!adminLoc) {
-        let snap = await getDoc(doc(db, "admin", "location"));
-        if (!snap.exists() || snap.data().active === false) {
-          throw new Error("Admin not active!");
-        }
-        adminLoc = snap.data();
+      let snap = await getDoc(doc(db, "admin", "location"));
+      if (!snap.exists() || snap.data().active === false) {
+        throw new Error("❌ Admin not active! Bus tracking is off.");
       }
+
+      let adminLoc = snap.data();
+
+      let lastSeen = new Date(adminLoc.time).getTime();
+      let isRecent = (Date.now() - lastSeen) < 5 * 60 * 1000;
+      if (!isRecent) {
+        throw new Error("❌ Bus location is outdated. Admin may have disconnected.");
+      }
+
+      cachedAdmin = adminLoc;
 
       let distance = getDistance(
         position.coords.latitude,
@@ -205,12 +241,7 @@ if (form) {
         time: new Date().toISOString()
       });
 
-      localStorage.setItem("studentData", JSON.stringify({
-        name,
-        regno,
-        dept,
-        stop
-      }));
+      localStorage.setItem("studentData", JSON.stringify({ name, regno, dept, stop }));
 
       alert("✅ Attendance marked!");
       form.reset();
@@ -248,16 +279,24 @@ if (table) {
   });
 }
 
-// ---------------- LIVE BUS LISTENER (OPTIONAL UI USE) ----------------
+// ---------------- LIVE BUS LISTENER ----------------
 onSnapshot(doc(db, "liveBus", "location"), (snap) => {
   if (snap.exists()) {
     let data = snap.data();
-    console.log("🚌 Live Bus:", data.lat, data.lon);
+    let el = document.getElementById("busLocation");
+    if (el) {
+      el.innerText = `🚌 Live: ${data.lat.toFixed(5)}, ${data.lon.toFixed(5)} — ${new Date(data.time).toLocaleTimeString()}`;
+    }
   }
 });
 
 // ---------------- LOGOUT ----------------
 globalThis.logout = async function () {
+  if (busWatchId !== null) {
+    navigator.geolocation.clearWatch(busWatchId);
+    busWatchId = null;
+  }
+
   let snap = await getDoc(doc(db, "admin", "location"));
 
   if (snap.exists()) {
@@ -274,7 +313,87 @@ globalThis.logout = async function () {
   window.location.href = "index.html";
 };
 
-// ---------------- DISTANCE ----------------
+// ---------------- DOWNLOAD CSV ----------------
+// FIX: function was missing entirely
+globalThis.downloadData = function () {
+  let rows = document.querySelectorAll("#tableBody tr");
+  if (rows.length === 0) {
+    alert("No attendance data to download!");
+    return;
+  }
+
+  let csv = "S.No,Name,Register Number,Department,Boarding Stop,Time\n";
+
+  rows.forEach((row) => {
+    let cols = row.querySelectorAll("td");
+    let line = Array.from(cols).map(td => `"${td.innerText}"`).join(",");
+    csv += line + "\n";
+  });
+
+  let blob = new Blob([csv], { type: "text/csv" });
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = `attendance_${today}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+// ---------------- DOWNLOAD PDF ----------------
+// FIX: function was missing entirely
+globalThis.downloadPDF = function () {
+  let rows = document.querySelectorAll("#tableBody tr");
+  if (rows.length === 0) {
+    alert("No attendance data to download!");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  let pdf = new jsPDF();
+
+  pdf.setFontSize(14);
+  pdf.text("R13 Bus Attendance - " + today, 14, 15);
+
+  let tableData = [];
+  rows.forEach((row) => {
+    let cols = row.querySelectorAll("td");
+    tableData.push(Array.from(cols).map(td => td.innerText));
+  });
+
+  pdf.autoTable({
+    head: [["S.No", "Name", "Register No", "Department", "Boarding Stop", "Time"]],
+    body: tableData,
+    startY: 25,
+    styles: { fontSize: 9 }
+  });
+
+  pdf.save(`attendance_${today}.pdf`);
+};
+
+// ---------------- PRINT ----------------
+// FIX: function was missing entirely
+globalThis.printTable = function () {
+  let tableHTML = document.querySelector(".list").innerHTML;
+  let win = window.open("", "_blank");
+  win.document.write(`
+    <html>
+      <head>
+        <title>R13 Attendance - ${today}</title>
+        <style>
+          body { font-family: sans-serif; padding: 20px; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border: 1px solid #333; padding: 8px; text-align: left; font-size: 13px; }
+          th { background: #0F172A; color: white; }
+        </style>
+      </head>
+      <body>${tableHTML}</body>
+    </html>
+  `);
+  win.document.close();
+  win.print();
+};
+
+// ---------------- DISTANCE (Haversine) ----------------
 function getDistance(lat1, lon1, lat2, lon2) {
   let R = 6371;
   let dLat = (lat2 - lat1) * Math.PI / 180;
@@ -287,4 +406,4 @@ function getDistance(lat1, lon1, lat2, lon2) {
     Math.sin(dLon / 2) ** 2;
 
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        }
+}
