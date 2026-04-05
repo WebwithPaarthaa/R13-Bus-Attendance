@@ -1,547 +1,301 @@
-*{
-    padding: 0px;
-    margin: 0px;
-    
-    
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body{
+/* VARIABLES */
+:root {
+  --primary: #4062dc;
+  --primary-dark: #2f4fd1;
+  --dark: #1e1e2f;
+  --white: #ffffff;
+  --text: #333;
+  --bg: linear-gradient(135deg, #4062dc, #6c8cff);
+
+  --radius: 16px;
+}
+
+
+body {
   font-family: "Funnel Sans", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: weight;
-  font-style: normal;
+  min-height: 100vh;
+  background:whitesmoke;
+  color:black;
 }
 
-.Appbar{
-    height: auto;
-    background-color:#0F172A;
-    color: white;
-    }
-.Appbar-content{
-    display: flex;
-    justify-content: space-between;
-    padding-top: 20px;
-    align-items: center;
+/* GLASS CARD */
+.greet,
+.student-dashboard,
+.Admin-dashboard {
+  
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  padding: 30px;
+  color:black;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 
-.greet{
+.form-group input {
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color:black;
+}
+
+.form-group input::placeholder {
+  color:black;
+}
+
+button {
+  background: linear-gradient(135deg, #6c8cff, #4062dc);
+  border-radius: 12px;
+  font-weight: bold;
+}
+/* ================= HEADER ================= */
+.Appbar {
   background: white;
-  padding: 10px;
-  margin-bottom: 30px;
-  border-radius: 15px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  padding: 10px 20px;
+}
+
+.Appbar-content {
+  align-items: center;
+  gap: 15px;
+  margin-left: 30px;
+}
+
+.Appbar-content h1{
+margin-top:30px ;
+}
+
+/* LOGO */
+.logo {
+  height: auto;
+  width: 200px;
+  margin-left: 50px;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px;
+  width: 240px;
+  height: 100vh;
+  background: var(--dark);
+  padding-top: 70px;
+  transition: 0.3s ease;
+  z-index: 1000;
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+/* SIDEBAR LINKS */
+.sidebar ul {
+  list-style: none;
+  padding-left: 20px;
+}
+
+.sidebar ul li {
+  margin: 20px 0;
+}
+
+.sidebar ul li a {
+  color: white;
+  text-decoration: none;
+  font-size: 18px;
+  transition: 0.2s;
+}
+
+.sidebar ul li a:hover {
+  color: #6c8cff;
+  padding-left: 5px;
+}
+
+/* ================= TOGGLE BUTTON ================= */
+.menu-toggle {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  font-size: 22px;
+  background: var(--dark);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 1100;
+}
+
+/* ================= OVERLAY ================= */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  z-index: 900;
+}
+
+.overlay.active {
+  display: block;
+}
+
+/* ================= CENTER ================= */
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+  margin-top: 30px;
+}
+
+/* ================= CARDS ================= */
+.greet,
+.student-dashboard,
+.Admin-dashboard {
+  background: white;
+  padding: 30px;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
   text-align: center;
-}
-.center{
-    height: fit-content;
-    margin-top:80px ; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: auto;
-    padding: 30px;
+  max-width: 420px;
+  width: 100%;
 }
 
-.page{
-    height: fit-content; 
-    justify-content: center;
-    align-items: center;
-    margin-top: 20px;
-    display: flex;
-}
-.page h6{
-    align-items: center;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    text-align: center;
-    font-size: large;
-    font-weight: bold;
-    margin-top: 20px;
-    padding: 20px;
-    width: fit-content;
-    justify-content: center;
-    display: flex;
-    margin: 20px;
-    
+/* TITLE */
+.greet h1,
+.student-dashboard h2,
+.Admin-dashboard h2 {
+  margin-bottom: 10px;
 }
 
-.greet h6{
-    padding-top:20px;
+/* SUBTEXT */
+.greet h6 {
+  color: #666;
+  margin-bottom: 20px;
 }
 
-.student-dashboard{
-    background: white;
-    padding:20px;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    text-align: center;
-    font-size: medium;
-    width: 300px;
-    
-    
+/* ================= BUTTONS ================= */
+button,
+.greet a {
+  display: inline-block;
+  padding: 12px 18px;
+  margin: 10px;
+  border-radius: 10px;
+  border: none;
+  background: var(--primary);
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
 }
+
+button:hover,
+.greet a:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+/* SPECIAL BUTTONS */
+.log {
+  position: fixed;
+  top: 70px;
+  right: 15px;
+  background: #8b0000;
+}
+
+.down-btn {
+  background: #032962ea;
+}
+
+/* ================= FORM ================= */
 .form-box {
-  background: white;
-  padding: 10px;
-  border-radius: 15px;
-  margin-top: 20px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  margin-top: 15px;
 }
 
 .form-group {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 6px;
   margin-top: 10px;
-  width: auto;
   text-align: left;
-}
-
-.form-group label {
-  width: 200px; 
-  font-weight: bold;
 }
 
 .form-group input {
-  flex: 1;
-  align-items: flex-start;
-  padding: 5px;
-}
-.student-dashboard button{
-    margin: 20px;
-    padding-bottom: 5px;
-    padding-top: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
-    border-radius: 15px;
-    background-color:rgb(64, 98, 220);
-    color: white;
-    font-size:medium;
-    font-weight: bolder;
-    cursor: pointer;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
 }
 
-
-.Admin-dashboard{
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    text-align: center;
-    width: 300px;
-}
-.Admin-dashboard button{
-    margin: 20px;
-    padding-bottom: 5px;
-    padding-top: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
-    border-radius: 15px;
-    background-color:rgb(64, 98, 220);
-    color: white;
-    font-size:medium;
-    font-weight: bolder;
-    cursor: pointer;
-}
-
-.log{
-    margin: 20px;
-    padding-bottom: 5px;
-    padding-top: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
-    border-radius: 15px;
-    background-color:rgb(137, 12, 12);
-    color: white;
-    font-size:medium;
-    text-align: left;
-    float: right;
-    cursor: pointer;
- 
-}
-
-.list h2{
-    margin-top: 80px;
-    margin-bottom: 50px;
-    margin-left: 10px;
-}
-
-.list table{
-    margin: 50px;
-    margin-left: 20px;
-}
-
-.list th{
-    padding: 5px;
-
-}
-
-.down-btn{
-    margin: 20px;
-    padding-bottom: 5px;
-    padding-top: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
-    border-radius: 15px;
-    background-color:rgb(12, 62, 137);
-    color: white;
-    font-size:medium;
-    text-align: left;
-    float: left;
-    cursor: pointer;
- 
-}
-
-
-@media (max-width: 600px) {
-  
-.Appbar{
-    height: auto;
-    background-color:#0F172A;
-    }
-  .Appbar-content {
-    flex-direction: column;
-    text-align: left;
-    margin-left: 2px;
-  }
-  .Appbar-content h1{
-    display: flexbox;
-    justify-content: space-around;
-  }
-
-  .pages {
-    flex-direction: row;
-    cursor:pointer;
-    font-size: medium;
-    font-weight: bold;
-    display: flexbox;
-    justify-content: space-between;
-    margin-top: 25px;
-    }
-
-  .pages a {
-    margin: 20px;
-    color: black;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    padding: 10px;
-    border-radius: 15px;
-
-  }
-}
-
-.form-box {
-  width: auto;
-  max-width:200px;
-
-  .form-group label {
-    width: auto;
-    margin-bottom: 5px;
-  }
-
-  .form-group input {
-    width: auto;  
-  }
-
-
-  .list table {
-    display: block;
-    overflow-x: auto;
-    width: auto;
-  }
-
-
-  .Admin-dashboard {
-    padding: 0px;
-    margin: 0px;
-    width: auto;
-  }
-
-  .student-dashboard{
-    width:fit-content;
-    padding: 0px;
-    margin: 0px;
-  }
-
-  .greet{
-    display: flexbox;
-    justify-content: space-between;
-    margin-bottom: 30px;
-  }
-
-
-  
-
-
-  .log{
-    background-color:rgb(137, 12, 12);
-    top:10px;
-    position: relative;
-    left: 25px;
-    color: white;
-    font-size:medium;
-    font-weight: bold;
-    text-align: right;
-    float: right;
-    cursor: pointer;
-    width: auto;
-    margin-top: 15px;
-    box-shadow: 2px 8px 20px rgba(0,0,0,0.2);
- }
-
- .down-btn{
-    margin: 20px;
-    padding-bottom: 5px;
-    padding-top: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
-    border-radius: 15px;
-    background-color:rgb(12, 62, 137);
-    color: white;
-    font-size:medium;
-    text-align: left;
-    float: left;
-    cursor: pointer;
-    width: auto;
-    box-shadow: 2px 8px 20px rgba(0,0,0,0.2);
- 
-}
-.page a{
-  width: auto;
-}
-.center{
-    height: auto;
-    margin-top:100px ; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: auto;
-    margin: 0px;
-    padding: 0px;
-}
-
-}
-
-
-@media (min-width: 200px) {
-  
-.Appbar{
-    height: 15vh;
-    }
-  .Appbar-content {
-    flex-direction: column;
-    text-align: center;
-    margin-left: 5px;
-  }
-
-  .pages {
-    flex-direction: row;
-    cursor:pointer;
-    font-size: medium;
-    font-weight: bold;
-    display: flexbox;
-    justify-content: space-between;
-    margin-top: 25px;
-    }
-
-  .pages a {
-    margin: 20px;
-    text-decoration: none;
-    color: black;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    padding: 10px;
-    border-radius: 15px;
-
-  }
-}
-
-.form-box {
-  width: auto;
-  max-width: 400px;
-
-
-  .form-group {
-    align-items: flex-start;
-  }
-
-  .form-group label {
-    width: 100%;
-    margin-bottom: 5px;
-  }
-
-  .form-group input {
-    width: auto;
-  }
-
-  .list table {
-    display: block;
-    overflow-x: auto;
-    width: auto;
-  }
-
-
-  .greet,
-  .Admin-dashboard {
-    padding: 20px;
-    margin: 50px;
-    max-width: auto;
-  }
-
-  .student-dashboard{
-    width: 100%;
-  }
-
-
-  
-
-
-  .log{
-    background-color:rgb(137, 12, 12);
-    top:10px;
-    position: relative;
-    left: 25px;
-    color: white;
-    font-size:medium;
-    font-weight: bold;
-    text-align: right;
-    float: right;
-    cursor: pointer;
-    width: auto;
-    margin-top: 15px;
-    box-shadow: 2px 8px 20px rgba(0,0,0,0.2);
- }
-
- .down-btn{
-    margin: 20px;
-    padding-bottom: 5px;
-    padding-top: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
-    border-radius: 15px;
-    background-color:rgb(12, 62, 137);
-    color: white;
-    font-size:medium;
-    text-align: left;
-    float: left;
-    cursor: pointer;
-    width: auto;
-    box-shadow: 2px 8px 20px rgba(0,0,0,0.2);
- 
-}
-.page a{
-  width: 120px;
-}
-.center{
-    height: auto;
-    margin-top:100px ; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    
-    width: 50%;
-}
-
-}
-
-
-.navbar {
+/* ================= PAGE BUTTONS ================= */
+.page {
   display: flex;
-  justify-content: space-between;
-  align-items: right;
-  background: #333;
-  padding: 10px 20px;
-  color: white;
-  position: absolute;
-  left: 10px;
-  top: 130px;
-  border-radius: 5px;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 15px;
 }
 
-
-
-.nav-links {
-  list-style: none;
-  display: none;
-  flex-direction: column;
-  background: #333;
-  gap: 20px;
+/* ================= TABLE ================= */
+.list {
+  padding: 20px;
+  margin-top: 40px;
 }
 
-.nav-links li a {
-  color: white;
-  padding: 5px;
-
+.list h2 {
+  margin-bottom: 20px;
 }
- .nav-links.active {
-    display: flex;
-  }
-
-.menu-toggle {
-  display: block;
-  cursor: pointer;
-}
-
-
-@media (max-width: 768px) {
-  .menu-toggle {
-    display: block;
-  
-  }
-
-  .nav-links {
-    display: none;
-    flex-direction: column;
-    background: #333;
-    right: 0;
-    width: 200px;
-    padding: 10px;
-    
-  }
-
-  .nav-links.active {
-    display: flex;
-  }
-
 
 .table-container {
-  width: 100%;
-  max-width: 500px;
-  overflow-x: auto;
-
   overflow-x: auto;
 }
 
 table {
-
-  min-width: 500px;
+  width: 100%;
   border-collapse: collapse;
+  background: white;
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
 th, td {
-  width: fit-content;
-  padding: 5px;
+  padding: 12px;
+  text-align: left;
+}
+
+th {
+  background: #eee;
+}
+
+/* ================= FOOTER ================= */
+.sign {
   text-align: center;
+  margin-top: 40px;
+  font-size: larger;
+  font-weight: bolder;
+  opacity: 0.2;
 }
 
+/* ================= MOBILE ================= */
+@media (max-width: 768px) {
+  .center {
+    padding: 40px 15px;
+  }
+
+  .greet,
+  .student-dashboard,
+  .Admin-dashboard {
+    padding: 20px;
+  }
 }
 
+/* PREVENT SCROLL */
 html, body {
   overflow-x: hidden;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 600px; 
-}
-
-td, th {
-  padding: 8px;
-  text-align: left;
-  word-break: break-word;
-}
-
-td {
-  word-wrap: break-word;
-  overflow-wrap: break-word;
 }

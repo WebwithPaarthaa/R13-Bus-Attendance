@@ -14,19 +14,22 @@
 <body>
     <div class="Appbar">
         <div class="Appbar-content">
-            <h1>R13 BUS-Attendance🚌</h1>
-           <nav class="navbar">
+         <img src="rit-logo.png" class="logo">
 
-  <div class="menu-toggle" onclick="toggleMenu()">
-    ☰
-  </div>
+   <!-- TOGGLE BUTTON -->
+<div class="menu-toggle" onclick="toggleMenu()">☰</div>
 
-  <ul class="nav-links" id="navLinks">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="student.html">Student-login</a></li>
-    <li><a href="admin.html">Admin-login</a></li>
+<!-- SIDEBAR -->
+<nav class="sidebar" id="navLinks">
+  <ul>
+    <li><a href="index.html">🏠 Home</a></li>
+    <li><a href="student.html">🎓 Student</a></li>
+    <li><a href="admin.html">🛠 Admin</a></li>
   </ul>
 </nav>
+
+<!-- OVERLAY -->
+<div class="overlay" onclick="toggleMenu()"></div>
                 
             </div>
         </div>
@@ -34,14 +37,10 @@
 
     <div class="center">
         <div class="greet" >
-            <h1>Heyyy!!</h1>
-            <h1>Good Morning🌤️</h1>
-            <h3>Have a safe journey👋 😊 </h3>
+               <h1>R13 BUS-Attendance</h1>
             <h6> Login here to proceed ⤵️</h6>
        
-        </div> 
-       
-    </div>
+  
           <div class="page">
             <h6> 
                 <a href="student.html">Student-login</a> 
@@ -50,8 +49,15 @@
                <a href="admin.html">Admin-login</a> 
             </h6>
         </div>
-    
-    
+            </div> 
+      </div>
+
+      <div class="sign">
+        <p>
+          Designed by : Parthasarathi K<br>(CSE-II) 2024-2028
+        </p>
+
+      </div>
 
     <script type="module" src="script.js"></script>
 </body>
