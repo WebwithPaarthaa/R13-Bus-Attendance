@@ -98,7 +98,19 @@ function startBusTracking() {
 /* ================= LOAD ================= */
 document.addEventListener("DOMContentLoaded", async () => {
   const path = window.location.pathname;
+let loginTime = localStorage.getItem("loginTime");
 
+if (loginTime) {
+  let now = Date.now();
+  let diff = now - loginTime;
+
+  if (diff > 60 * 60 * 1000) { // 1 hour
+    alert("⏳ Session expired. Please login again.");
+    localStorage.removeItem("isAdminLoggedIn");
+    localStorage.removeItem("loginTime");
+    safeRedirect("admin.html");
+  }
+}
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (pos) => (cachedStudentLoc = pos),
@@ -118,6 +130,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
     startBusTracking();
+     // 🔥 ADD THIS BLOCK
+onSnapshot(doc(db, "admin", "location"), (snap) => {
+  if (!snap.exists()) return;
+
+  let data = snap.data();
+
+  // 🔥 Only logout if another admin is ACTIVE and NOT this session
+  if (data.active === true && data.sessionId !== adminSessionId) {
+    alert("⚠️ Another admin logged in. You are logged out.");
+    logout();
+  }
+});
   }
 
   if (path.includes("admin.html")) {
@@ -146,11 +170,46 @@ globalThis.adminLogin = async function () {
   let password = document.getElementById("adminPass").value;
 
   try {
+    // 🔥 CHECK IF ADMIN ALREADY ACTIVE
+    let snap = await getDoc(doc(db, "admin", "location"));
+
+    if (snap.exists()) {
+      let data = snap.data();
+
+      if (data.active === true && data.sessionId !== adminSessionId) {
+        alert("⚠️ Another admin is already active on another device!");
+        return;
+      }
+    }
+
+let isLoggedIn = localStorage.getItem("isAdminLoggedIn");
+let loginTime = localStorage.getItem("loginTime");
+
+if (isLoggedIn === "true" && loginTime) {
+  let diff = Date.now() - loginTime;
+
+  if (diff < 60 * 60 * 1000) {
+    alert("Already logged in!");
+    return;
+  }
+}
+    // ✅ LOGIN
     await signInWithEmailAndPassword(auth, email, password);
+    localStorage.setItem("loginTime", Date.now());
+
+    // 🔥 SET THIS SESSION AS ACTIVE ADMIN
+    await setDoc(doc(db, "admin", "location"), {
+      active: true,
+      sessionId: adminSessionId,
+      time: new Date().toISOString()
+    }, { merge: true });
+
     localStorage.setItem("isAdminLoggedIn", "true");
+
     window.location.href = "dashboard.html";
+
   } catch (err) {
-    alert("Login failed!");
+    alert("❌ Invalid email or password!");
   }
 };
 
@@ -339,14 +398,18 @@ window.downloadPDF = function () {
   const { jsPDF } = window.jspdf;
   let doc = new jsPDF();
 
-  doc.text(" R13 bus Attendance Report -"+ today ,14, 10);
+ let todayFormatted = new Date().toLocaleDateString();
+
+doc.text("R13 Bus Attendance Report - " + todayFormatted, 14, 10);
 
   doc.autoTable({
     html: "table",
     startY: 20
   });
 
-  doc.save("attendance.pdf");
+let busName = "R13"; // later you can make dynamic
+
+doc.save(`${busName}_attendance_${today}.pdf`);
 };
 
 window.printTable = function () {
